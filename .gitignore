@@ -15,7 +15,7 @@ run.sh
 ## NIFTI
 *.nii.gz
 
-*.csv
+#*.csv
 # Distribution / packaging
 .Python
 build/
@@ -87,7 +87,7 @@ target/
 meta/
 *.ods
 *.pkl
-*.csv
+#*.csv
 # Jupyter Notebook
 .ipynb_checkpoints
 
