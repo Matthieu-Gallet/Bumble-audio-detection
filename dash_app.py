@@ -179,15 +179,15 @@ def update_indices(indice1, indice2, indice3):
 def update_signal(clickData, src, mode, fmin, fmax, cmin, cmax):
     if clickData == None:
         return dash.no_update, dash.no_update
-    
+
+    # force player update by changing name
     if src == 'assets/tps1.flac':
         src = 'assets/tps2.flac'
     else:
         src = 'assets/tps1.flac'
 
     idx = clickData['points'][0]['pointNumber']
-    print(mode)
-    
+
     return(fig_g.get_sample_fig(Df['datetime'][idx], args.save_path, None, mode, src),  src)
 
 if __name__ == '__main__':
