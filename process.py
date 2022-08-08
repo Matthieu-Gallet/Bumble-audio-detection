@@ -1,16 +1,18 @@
 import os
 import argparse
+from tqdm import tqdm
+
+import pandas as pd
+import torch
 
 from utils import metadata
 from utils import dataloader
-import torch
-from audioset_tagging_cnn.inference import audio_tagging
-from tqdm import tqdm
-
-from indicies import name_indicies
 from utils.tagging_validation import tagging_validate
 
-import pandas as pd
+from audioset_tagging_cnn.inference import audio_tagging
+
+from indicies import name_indicies
+
 
 checkpoint_path = 'ResNet22_mAP=0.430.pth'
 
@@ -20,22 +22,21 @@ parser.add_argument('--save_path', default='/Users/nicolas/Desktop/EAVT/example/
 args = parser.parse_args()
 
 csvfile = os.path.join(args.save_path, 'indices.csv')
+audio_savepath = os.path.join(args.save_path, 'audio')
 
 # get meta data file
 df_files = metadata.metadata_generator(args.data_path)
 
 # get data loader
-dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = 1, Fmax = 10**5, batch_size = 12)
+dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = 1, Fmax = 10**5, savepath = audio_savepath, batch_size = 12)
 
 df_site = {'datetime':[], 'name':[], 'start':[], 'clipwise_output' : [], 'embedding' :[], 'sorted_indexes':[]}
 for ii in name_indicies: df_site[ii] = []
 
 for batch_idx, (inputs, info) in enumerate(tqdm(dl)):
 
-    # print('tototo')
     with torch.no_grad():
         clipwise_output, labels, sorted_indexes, embedding = audio_tagging(inputs, checkpoint_path , usecuda=False)
-
 
     for idx, date_ in enumerate(info['date']):
         df_site['datetime'].append(str(date_)) 
