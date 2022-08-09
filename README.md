@@ -1,6 +1,8 @@
 # EAVT
 Eco-Acoustic Visualization Tools
 
+![plot](image.png)
+
 ## Audio processing
 **First download the ResNet22 pretrained model using instructions [here](https://github.com/qiuqiangkong/audioset_tagging_cnn#audio-tagging-using-pretrained-models)**
 
@@ -26,6 +28,6 @@ optional arguments:
   --save_path SAVE_PATH
                         Path to save meta data
 
-                        
+
 
 Code for Audioset Tagging CNN from [Qiu Qiang Kong](https://github.com/qiuqiangkong/audioset_tagging_cnn)
