@@ -29,7 +29,7 @@ time_axe = [datetime.strptime(ii,"%Y%m%d_%H%M%S") for ii in Df['datetime']]
 app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN])
 
 fig1 = fig_g.get_fig_indices(Df, ('anthropophony', "geophony", "biophony"), time_axe)
-fig2 = fig_g.get_sample_fig(Df['datetime'][0], args.save_path, None, None, 'assets/tps1.flac')
+fig2 = fig_g.get_sample_fig(Df['datetime'][0], args.save_path, None, 'MFCC', 'assets/tps1.flac')
 
 ### box 1 (choose indices)
 
@@ -95,8 +95,11 @@ file_card_audio = dbc.Card(
                                               value=0, style={'width': 100}),
                         
                         html.Br(),html.Br(),
-                        dbc.Label("Frequency scale", style={'font-weight': 'bold'}),
-                        dcc.Dropdown(id='Scale', options=['STFT', 'MFCC', 'CWT'], value='MFCC'), 
+                        dbc.Label("Frequency calculation", style={'font-weight': 'bold'}),
+                        dcc.Dropdown(id='Scale', options=['STFT', 'MFCC'], value='MFCC'), 
+                        html.Br(),
+                        dbc.Label("Frequency Scale", style={'font-weight': 'bold'}),
+                        dcc.Dropdown(id='Scale_dB', options=['Lin', 'Log'], value='Log'), 
                         html.Br(),html.Br(),
                         dbc.Label("Listen audio frequency band", style={'font-weight': 'bold'}),
                         dcc.Dropdown(id='audio_params', options=['1 Hz - 10 kHz', '10 kHz - 20 kHz', '20 kHz - 30 kHz', '30 kHz - 40 kHz', '40 kHz - 50 kHz'], value='1 Hz - 10 kHz'),
@@ -171,16 +174,17 @@ def update_indices(indice1, indice2, indice3):
     Input('indices_fig', 'clickData'),  
     Input('player', 'src'),  
     Input('Scale', 'value'),
+    Input('Scale_dB', 'value'),
     Input('fmin', 'value'),
     Input('fmax', 'value'),
     Input('cmin', 'value'),
     Input('cmax', 'value'),
 )
-def update_signal(clickData, src, mode, fmin, fmax, cmin, cmax):
+def update_signal(clickData, src, mode, dB, fmin, fmax, cmin, cmax):
     if clickData == None:
         return dash.no_update, dash.no_update
 
-    # force player update by changing name
+    # force player to update by changing file name
     if src == 'assets/tps1.flac':
         src = 'assets/tps2.flac'
     else:
@@ -188,7 +192,7 @@ def update_signal(clickData, src, mode, fmin, fmax, cmin, cmax):
 
     idx = clickData['points'][0]['pointNumber']
 
-    return(fig_g.get_sample_fig(Df['datetime'][idx], args.save_path, None, mode, src),  src)
+    return(fig_g.get_sample_fig(Df['datetime'][idx], args.save_path, None, mode, src, (fmin, fmax), (cmin, cmax), dB),  src)
 
 if __name__ == '__main__':
     app.run_server(debug=False, port=8054)
