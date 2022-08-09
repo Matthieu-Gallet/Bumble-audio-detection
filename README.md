@@ -1,6 +1,8 @@
 # EAVT
 Eco-Acoustic Visualization Tools
 
+# Currently in development
+
 ![plot](image.png)
 
 ## Audio processing
