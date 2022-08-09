@@ -10,8 +10,6 @@ from scipy import signal
 import librosa
 
 def get_fig_indices(Df, indices, time_axe):
-    print(time_axe)
-
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, subplot_titles=("<b>{}</b>".format(indices[0]), "<b>{}</b>".format(indices[1]), "<b>{}</b>".format(indices[2])), vertical_spacing=0.04)
     fig.add_trace(go.Scatter(x = time_axe, y = Df[indices[0]], line = dict(color='black'), opacity=0.5, mode='markers'), row=1, col=1)
     fig.add_trace(go.Scatter(x = time_axe, y = Df[indices[1]], line = dict(color='blue'), opacity=0.5, mode='markers'), row=2, col=1)
@@ -32,31 +30,38 @@ def get_fig_indices(Df, indices, time_axe):
 
 
 
-def get_sample_fig(file, path, transpose, mode, save, fminmax = None, cminmax = None, dB = 'Log'):
+def get_sample_fig(file, path, transpose, mode, save, fminmax = None, cminmax = None, dB = 'Log', shift = 0):
 
     if cminmax == None : cminmax = (-40, 0)
 
     x, sr = torchaudio.load(os.path.join(path, "audio", file + '.flac'), format='flac')
     x_numpy = x[0,:].numpy()
     N = len(x_numpy)
-    #### transpose
+
 
     #### Save to tmp assets
     if fminmax is not None:
         b, a = signal.butter(2, fminmax ,fs=sr, btype='band')
-        band = signal.filtfilt(b, a, x_numpy)
-        x=torch.FloatTensor(band.copy()).view(1, len(band))
-        torchaudio.save( save , x , sr, format='flac')
-        x_numpy = band
-    else:
-        torchaudio.save( save , x, sr, format='flac')
+        x_numpy = signal.filtfilt(b, a, x_numpy)
+
+
+    #### transpose
+    if shift != 0:
+        x_numpy_shifted = librosa.effects.pitch_shift(x_numpy, sr, n_steps=int(shift), bins_per_octave=1)
+    else: x_numpy_shifted = x_numpy
+    
+    x_shifted = torch.FloatTensor(x_numpy_shifted.copy()).view(1, len(x_numpy_shifted))
+    torchaudio.save( save , x_shifted, sr, format='flac')
+    x = torch.FloatTensor(x_numpy.copy()).view(1, len(x_numpy))
+
+    
 
     #### Time frequency representation
 
     if mode == 'STFT':
         f, t, z = signal.stft(x_numpy, fs = sr, nfft=2048, nperseg=2048)
     elif mode == 'MFCC':
-        transform = torchaudio.transforms.MelSpectrogram(sr, n_fft=2048, win_length=2048, n_mels=512)
+        transform = torchaudio.transforms.MelSpectrogram(sr, n_fft=1024, win_length=512, n_mels=256)
         freq = F.melscale_fbanks(transform.n_fft // 2 + 1, transform.mel_scale.f_min, transform.mel_scale.f_max, transform.mel_scale.n_mels, transform.mel_scale.sample_rate, None, 'htk')
         # calculate mel freq bins
         m_min = F.functional._hz_to_mel(transform.mel_scale.f_min, mel_scale='htk')

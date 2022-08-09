@@ -101,8 +101,9 @@ file_card_audio = dbc.Card(
                         dbc.Label("Frequency Scale", style={'font-weight': 'bold'}),
                         dcc.Dropdown(id='Scale_dB', options=['Lin', 'Log'], value='Log'), 
                         html.Br(),html.Br(),
-                        dbc.Label("Listen audio frequency band", style={'font-weight': 'bold'}),
-                        dcc.Dropdown(id='audio_params', options=['1 Hz - 10 kHz', '10 kHz - 20 kHz', '20 kHz - 30 kHz', '30 kHz - 40 kHz', '40 kHz - 50 kHz'], value='1 Hz - 10 kHz'),
+                        dbc.Label("Pitch shift (octave) ", style={'font-weight': 'bold'}),
+                        dcc.Input(id='audio_params', type="number",#,label="Fmax",
+                                              value=0, style={'width': 100}),
                         html.Br(),
                         html.Audio(id="player", src='assets/tps1.flac', controls=True, style={
                         "width": "100%"})
@@ -179,8 +180,9 @@ def update_indices(indice1, indice2, indice3):
     Input('fmax', 'value'),
     Input('cmin', 'value'),
     Input('cmax', 'value'),
+    Input('audio_params', 'value')
 )
-def update_signal(clickData, src, mode, dB, fmin, fmax, cmin, cmax):
+def update_signal(clickData, src, mode, dB, fmin, fmax, cmin, cmax, shift):
     if clickData == None:
         return dash.no_update, dash.no_update
 
@@ -192,7 +194,7 @@ def update_signal(clickData, src, mode, dB, fmin, fmax, cmin, cmax):
 
     idx = clickData['points'][0]['pointNumber']
 
-    return(fig_g.get_sample_fig(Df['datetime'][idx], args.save_path, None, mode, src, (fmin, fmax), (cmin, cmax), dB),  src)
+    return(fig_g.get_sample_fig(Df['datetime'][idx], args.save_path, None, mode, src, (fmin, fmax), (cmin, cmax), dB, shift),  src)
 
 if __name__ == '__main__':
     app.run_server(debug=False, port=8054)
