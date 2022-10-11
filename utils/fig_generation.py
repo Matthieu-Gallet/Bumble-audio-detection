@@ -34,7 +34,7 @@ def get_sample_fig(file, path, transpose, mode, save, fminmax = None, cminmax = 
 
     if cminmax == None : cminmax = (-40, 0)
 
-    x, sr = torchaudio.load(os.path.join(path, "audio", file + '.flac'), format='flac')
+    x, sr = torchaudio.load(os.path.join(path, "audio_c", file + '.flac'), format='flac')
     x_numpy = x[0,:].numpy()
     N = len(x_numpy)
 

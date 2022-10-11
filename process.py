@@ -25,8 +25,8 @@ parser.add_argument('--data_path', default='/Users/nicolas/Desktop/EAVT/example/
 parser.add_argument('--save_path', default='/Users/nicolas/Desktop/EAVT/example/metadata/', type=str, help='Path to save meta data')
 args = parser.parse_args()
 
-csvfile = os.path.join(args.save_path, 'indices.csv')
-audio_savepath = os.path.join(args.save_path, 'audio')
+csvfile = os.path.join(args.save_path, 'indices_c.csv')
+audio_savepath = os.path.join(args.save_path, 'audio_c')
 if not os.path.exists(audio_savepath):
     os.makedirs(audio_savepath)
 
@@ -38,7 +38,7 @@ dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = 1, Fmax = 1
 df_site = {'datetime':[], 'name':[], 'start':[]}
 if PROCESS_TAG:
     df_site['clipwise_output'] =  []
-    df_site['embedding'] =[], 
+    df_site['embedding'] = []  
     df_site['sorted_indexes'] = []
 if PROCESS_Indices:
     for ii in name_indicies: df_site[ii] = []

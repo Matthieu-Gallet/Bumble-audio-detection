@@ -22,7 +22,7 @@ parser.add_argument('--save_path', default='/Users/nicolas/Desktop/EAVT/example/
 args = parser.parse_args()
 
 # Load datas
-Df = pd.read_csv(os.path.join(args.save_path, 'indices.csv'))
+Df = pd.read_csv(os.path.join(args.save_path, 'indices_c.csv'))
 indices = Df.columns[3:]
 time_axe = [datetime.strptime(ii,"%Y%m%d_%H%M%S") for ii in Df['datetime']]
 

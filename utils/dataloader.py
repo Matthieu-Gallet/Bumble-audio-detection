@@ -36,7 +36,7 @@ class Silent_dataset(Dataset):
         
         torchaudio.save(os.path.join(self.savepath, self.meta['date'][idx].strftime('%Y%m%d_%H%M%S')+ '.flac'), wav, sr, format = 'flac')
 
-        ecoac = compute_ecoacoustics(wav_o,sr, self.ref_dB,self.Fmin, self.Fmax)
+        ecoac = compute_ecoacoustics(wav_o, sr, self.ref_dB,self.Fmin, self.Fmax)
         
         wav = resample(wav_o, int(len_audio_s*self.sr_tagging))
         wav = torch.tensor(wav)
