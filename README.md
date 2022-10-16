@@ -37,7 +37,9 @@ options:
 
 
 Eco-acoustic indices can be added in the script indicies.py.
-The name of the indice must be added in the list `name_indicies` and the calculation part in the function `compute_ecoacoustics`.
+The name of the indice must be added in the list `name_indicies` and the calculation part in the function `compute_ecoacoustics`. 
+
+Each wav file is divided into 10 second segments and converted to flac.
 
 
 ## Dash app
