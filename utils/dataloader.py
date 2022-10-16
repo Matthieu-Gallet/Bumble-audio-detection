@@ -64,8 +64,11 @@ def get_dataloader_site(path_wavfile, meta_site ,Fmin, Fmax, savepath, batch_siz
         # cut into 10 sec segment length
         for win in range(nb_win):
             delta = datetime.timedelta(seconds=int((win*len_audio_s)))
-            meta_dataloader = meta_dataloader.append({'filename': wavfile, 'sr': sr_in, 'start': (
-                win*len_audio_s), 'stop': ((win+1)*len_audio_s), 'len': len_file, 'date': meta_site['datetime'][idx] + delta}, ignore_index=True)
+            # meta_dataloader = pd.concat([meta_dataloader,pd.DataFrame({'filename': wavfile, 'sr': sr_in, 'start': (
+            #     win*len_audio_s), 'stop': ((win+1)*len_audio_s), 'len': len_file, 'date': meta_site['datetime'][idx] + delta})], ignore_index=True)
+            curmeta = pd.DataFrame.from_dict({'filename': [wavfile], 'sr': [sr_in], 'start': (
+                    [win*len_audio_s]), 'stop': [((win+1)*len_audio_s)], 'len': [len_file], 'date': meta_site['datetime'][idx] + delta})
+            meta_dataloader = pd.concat([meta_dataloader,curmeta], ignore_index=True)
 
     site_set = Silent_dataset(meta_dataloader.reset_index(drop=True),Fmin, Fmax, np.min(meta_site['dB']), savepath)
     site_set = torch.utils.data.DataLoader(

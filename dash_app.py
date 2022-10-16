@@ -18,18 +18,27 @@ import utils.fig_generation as fig_g
 
 
 parser = argparse.ArgumentParser(description='Script to display sound files recorded by Audiomoth ')
-parser.add_argument('--save_path', default='/Users/nicolas/Desktop/EAVT/example/metadata/', type=str, help='Path to save meta data')
+parser.add_argument('--save_path', default='example/metadata', type=str, help='Path to save meta data')
+parser.add_argument('--name', default='', type=str, help='name of measurement')
 args = parser.parse_args()
 
+AUDIO_PATH = os.path.join(args.save_path, f'audio_{args.name}')
+
 # Load datas
-Df = pd.read_csv(os.path.join(args.save_path, 'indices_c.csv'))
+Df = pd.read_csv(os.path.join(args.save_path,  f'indices_{args.name}.csv'))
 indices = Df.columns[3:]
 time_axe = [datetime.strptime(ii,"%Y%m%d_%H%M%S") for ii in Df['datetime']]
+if len(Df.columns[3:])>3:
+    col = Df.columns[3:]
+elif len(Df.columns[3:])>1:
+    col = [Df.columns[3]]*3
+else:
+    raise('Nothing to show ...')
 
 app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN])
 
-fig1 = fig_g.get_fig_indices(Df, ('anthropophony', "geophony", "biophony"), time_axe)
-fig2 = fig_g.get_sample_fig(Df['datetime'][0], args.save_path, None, 'MFCC', 'assets/tps1.flac')
+fig1 = fig_g.get_fig_indices(Df, (col[0], col[1], col[2]), time_axe)
+fig2 = fig_g.get_sample_fig(Df['datetime'][0], AUDIO_PATH, None, 'MFCC', 'assets/tps1.flac')
 
 ### box 1 (choose indices)
 
@@ -48,11 +57,11 @@ file_card = dbc.Card(
                         
                         
                         html.Br(),html.Br(),
-                        dcc.Dropdown(id='indice 1', options=indices, value='anthropophony'), 
+                        dcc.Dropdown(id='indice 1', options=indices, value=col[0]), 
                         html.Br(),html.Br(),
-                        dcc.Dropdown(id='indice 2', options=indices, value="geophony"),
+                        dcc.Dropdown(id='indice 2', options=indices, value=col[1]),
                         html.Br(),html.Br(),
-                        dcc.Dropdown(id='indice 3', options=indices, value = "biophony"),
+                        dcc.Dropdown(id='indice 3', options=indices, value=col[2]),
                         html.Br(),html.Br(),
 
                     ]
@@ -194,7 +203,7 @@ def update_signal(clickData, src, mode, dB, fmin, fmax, cmin, cmax, shift):
 
     idx = clickData['points'][0]['pointNumber']
 
-    return(fig_g.get_sample_fig(Df['datetime'][idx], args.save_path, None, mode, src, (fmin, fmax), (cmin, cmax), dB, shift),  src)
+    return(fig_g.get_sample_fig(Df['datetime'][idx], AUDIO_PATH, None, mode, src, (fmin, fmax), (cmin, cmax), dB, shift),  src)
 
 if __name__ == '__main__':
     app.run_server(debug=False, port=8054)

@@ -7,26 +7,36 @@ import torch
 
 from utils import metadata
 from utils import dataloader
-from utils.tagging_validation import tagging_validate
 
+from utils.tagging_validation import tagging_validate
 from audioset_tagging_cnn.inference import audio_tagging
 
 from indicies import name_indicies
 
-# In process
-PROCESS_TAG = True
-PROCESS_Indices = True
+
 
 
 checkpoint_path = 'ResNet22_mAP=0.430.pth'
 
 parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
-parser.add_argument('--data_path', default='/Users/nicolas/Desktop/EAVT/example/audio/0001/', type=str, help='Path to wav files')
-parser.add_argument('--save_path', default='/Users/nicolas/Desktop/EAVT/example/metadata/', type=str, help='Path to save meta data')
+parser.add_argument('--data_path', default='example/audio/0002/', type=str, help='Path to wav files')
+parser.add_argument('--save_path', default='example/metadata/', type=str, help='Path to save meta data')
+parser.add_argument('--name', default='', type=str, help='name of measurement')
+parser.add_argument('--process_tagging', default=1, type=int, help='Process tagging 0 or 1')
+parser.add_argument('--process_indices', default=1, type=int, help='Process indices 0 or 1')
+
+parser.add_argument('--Fmin', default=100, type=float, help='Freq min (filter)')
+parser.add_argument('--Fmax', default=10**5, type=float, help='Freq max (filter)')
 args = parser.parse_args()
 
-csvfile = os.path.join(args.save_path, 'indices_c.csv')
-audio_savepath = os.path.join(args.save_path, 'audio_c')
+PROCESS_TAG = args.process_tagging
+print( PROCESS_TAG)
+PROCESS_Indices = args.process_indices
+
+
+
+csvfile = os.path.join(args.save_path, f'indices_{args.name}.csv')
+audio_savepath = os.path.join(args.save_path, f'audio_{args.name}')
 if not os.path.exists(audio_savepath):
     os.makedirs(audio_savepath)
 
@@ -34,7 +44,7 @@ if not os.path.exists(audio_savepath):
 df_files = metadata.metadata_generator(args.data_path)
 
 # get data loader
-dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = 1, Fmax = 10**5, savepath = audio_savepath, batch_size = 12)
+dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = 100, Fmax = 10**5, savepath = audio_savepath, batch_size = 12)
 df_site = {'datetime':[], 'name':[], 'start':[]}
 if PROCESS_TAG:
     df_site['clipwise_output'] =  []
@@ -65,15 +75,21 @@ if PROCESS_TAG:
 
 
 ## Dataframe with only ecoacoustic indices and important metadata 
-Df_eco = pd.DataFrame()
-Df_eco['name'] = df_site['name']
-Df_eco['start'] = df_site['start']
-Df_eco['datetime'] = df_site['datetime']
-for key in info['ecoac'].keys():
-    Df_eco[key] = df_site[key]
+if PROCESS_Indices:
+    Df_eco = pd.DataFrame()
+    Df_eco['name'] = df_site['name']
+    Df_eco['start'] = df_site['start']
+    Df_eco['datetime'] = df_site['datetime']
+    for key in info['ecoac'].keys():
+        Df_eco[key] = df_site[key]
 
 ## Fusing with the dataframe containing only the ecoacoustic indices 
+if PROCESS_Indices and PROCESS_TAG:
+    Df_final = pd.merge(Df_tagging,Df_eco,on=['name','start','datetime'])
+elif PROCESS_TAG:
+    Df_final = Df_tagging
+else:
+    Df_final = pd.DataFrame(df_site)
 
-Df_final = pd.merge(Df_tagging,Df_eco,on=['name','start','datetime'])
 Df_final.sort_values(by=['datetime','start']).to_csv(csvfile,index=False)
 # Df_tagging.sort_values(by=['datetime','start']).to_csv(csvfile,index=False)
