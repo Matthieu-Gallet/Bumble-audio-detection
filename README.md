@@ -46,6 +46,7 @@ Each wav file is divided into 10 second segments and converted to flac.
 
 ## Dash app
 
+```
 dash_app.py [-h] [--save_path SAVE_PATH]
 
 Script to display sound files recorded by Audiomoth
@@ -55,7 +56,7 @@ options:
   --save_path SAVE_PATH
                         Path to save meta data
   --name NAME           name of measurement
-
+```
 
 
 
