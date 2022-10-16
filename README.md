@@ -17,6 +17,7 @@ Finally, use the dash_app.py script to run the web application.
 ## Audio processing
 **First download the ResNet22 pretrained model using instructions [here](https://github.com/qiuqiangkong/audioset_tagging_cnn#audio-tagging-using-pretrained-models)**
 
+```
 process.py [-h] [--data_path DATA_PATH] [--save_path SAVE_PATH]
 
 Script to process sound files recorded by Audiomoth
@@ -35,6 +36,7 @@ options:
   --Fmin FMIN           Freq min (filter)
   --Fmax FMAX           Freq max (filter)
 
+```
 
 Eco-acoustic indices can be added in the script indicies.py.
 The name of the indice must be added in the list `name_indicies` and the calculation part in the function `compute_ecoacoustics`. 
