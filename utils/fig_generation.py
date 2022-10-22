@@ -70,7 +70,7 @@ def get_sample_fig(file, path, transpose, mode, save, fminmax = None, cminmax = 
         m_pts = torch.linspace(m_min, m_max, transform.mel_scale.n_mels + 2)
         f = F.functional._mel_to_hz(m_pts, mel_scale='htk').numpy()
         z = transform(x)
-        t = np.linspace(0, 10, int(z.size()[-1]))
+        t = np.linspace(0, int(len(x_numpy)/sr), int(z.size()[-1]))
         z = z.numpy()[0,...]
         
 

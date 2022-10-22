@@ -24,16 +24,24 @@ parser.add_argument('--save_path', default='example/metadata/', type=str, help='
 parser.add_argument('--name', default='', type=str, help='name of measurement')
 parser.add_argument('--process_tagging', default=1, type=int, help='Process tagging 0 or 1')
 parser.add_argument('--process_indices', default=1, type=int, help='Process indices 0 or 1')
+parser.add_argument('--audio_format', default='wav', type=str, help='wav or flac')
+parser.add_argument('--length_audio_segment', default=10, type=int, help='Length of analyzing window MUST BE LOWER THAN SIGNAL LENGTH')
+parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
 
 parser.add_argument('--Fmin', default=100, type=float, help='Freq min (filter)')
-parser.add_argument('--Fmax', default=10**5, type=float, help='Freq max (filter)')
+parser.add_argument('--Fmax', default=10**4, type=float, help='Freq max (filter)')
 args = parser.parse_args()
 
 PROCESS_TAG = args.process_tagging
 print( PROCESS_TAG)
 PROCESS_Indices = args.process_indices
+AUDIO_FORMAT = args.audio_format
+LEN_AUDIO = args.length_audio_segment
 
-
+if PROCESS_TAG:
+    if LEN_AUDIO != 10:
+        raise('With tagging, length_audio_segment must be 10')
+    
 
 csvfile = os.path.join(args.save_path, f'indices_{args.name}.csv')
 audio_savepath = os.path.join(args.save_path, f'audio_{args.name}')
@@ -41,10 +49,12 @@ if not os.path.exists(audio_savepath):
     os.makedirs(audio_savepath)
 
 # get meta data file
-df_files = metadata.metadata_generator(args.data_path)
+df_files = metadata.metadata_generator(args.data_path, AUDIO_FORMAT)
+if len(df_files) == 0:
+    raise('No audio file found')
 
 # get data loader
-dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = 100, Fmax = 10**5, savepath = audio_savepath, batch_size = 12)
+dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = args.Fmin, Fmax = args.Fmax, savepath = audio_savepath, len_audio_s  = LEN_AUDIO, save_audio=args.save_audio_flac, batch_size = 12)
 df_site = {'datetime':[], 'name':[], 'start':[]}
 if PROCESS_TAG:
     df_site['clipwise_output'] =  []
@@ -54,6 +64,7 @@ if PROCESS_Indices:
     for ii in name_indicies: df_site[ii] = []
 
 for batch_idx, (inputs, info) in enumerate(tqdm(dl)):
+    #print(info)
     if PROCESS_TAG:
         with torch.no_grad():
             clipwise_output, labels, sorted_indexes, embedding = audio_tagging(inputs, checkpoint_path , usecuda=False)
