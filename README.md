@@ -49,7 +49,8 @@ options:
 python3 process.py --save_path example/metadata/ --data_path example/metadata/audio_0002/ --name 0004 --audio_format flac --length_audio_segment 3 --process_tagging 0
 ```
 processing only ecoacoustic indices of flac format audio file with 3 s segment length.
------------
+
+
 Eco-acoustic indices can be added in the script indices.py.
 The name of the index must be added in the list `name_indices` and the calculation part in the function `compute_ecoacoustics`. 
 
