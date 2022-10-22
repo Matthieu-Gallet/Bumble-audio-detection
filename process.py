@@ -11,7 +11,7 @@ from utils import dataloader
 from utils.tagging_validation import tagging_validate
 from audioset_tagging_cnn.inference import audio_tagging
 
-from indicies import name_indicies
+from indices import name_indicies
 
 
 
