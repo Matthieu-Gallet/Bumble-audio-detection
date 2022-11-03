@@ -7,7 +7,7 @@ Eco-Acoustic Visualization Tools
 ## How to use
 
 First, create a directory with wav audio files named YYMMDD_HHMMSS.wav/flac or What_EVER_YYMMDD_HHMMSS.wav/flac. 
-Then, use process.py to extract the eco-acoustic cues and the tagging.
+Then, use process.py to extract the eco-acoustic indices and the tagging.
 Finally, use the dash_app.py script to run the web application.
 
 
