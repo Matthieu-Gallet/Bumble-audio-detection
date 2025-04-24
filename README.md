@@ -76,7 +76,7 @@ options:
 Code for Audioset Tagging CNN from [Qiu Qiang Kong](https://github.com/qiuqiangkong/audioset_tagging_cnn)
 Code for Eco-acoustic indices from [Patric Guyot](https://github.com/patriceguyot/Acoustic_Indices) and [Sylvain Haupert and Juan Sebastian Ulloa](https://github.com/scikit-maad/scikit-maad)
 
-## Specific settings for RUN 
+## Specific settings for Buzz Detection 
 ```
-python process.py --data_path /home/nfarrugi/Documents/datasets/RUN2023/tests231105_AM1/ --save_path /home/nfarrugi/Documents/datasets/RUN2023/output --name AM1 --process_tagging 1 --Fmax 47900
+python process.py --save_audio_flac 1 --data_path /home/nfarrugi/Documents/datasets/BumbleBuzz/BumbleBuzz/$curdir --name $curdir --Fmax 15999 --length_audio_segment 5 --process_tagging 1 --save_path /home/nfarrugi/Documents/datasets/BumbleBuzz/BumbleBuzz/detection --audio_format wav
 ```
