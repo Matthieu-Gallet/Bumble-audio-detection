@@ -75,3 +75,8 @@ options:
 
 Code for Audioset Tagging CNN from [Qiu Qiang Kong](https://github.com/qiuqiangkong/audioset_tagging_cnn)
 Code for Eco-acoustic indices from [Patric Guyot](https://github.com/patriceguyot/Acoustic_Indices) and [Sylvain Haupert and Juan Sebastian Ulloa](https://github.com/scikit-maad/scikit-maad)
+
+## Specific settings for RUN 
+```
+python process.py --data_path /home/nfarrugi/Documents/datasets/RUN2023/tests231105_AM1/ --save_path /home/nfarrugi/Documents/datasets/RUN2023/output --name AM1 --process_tagging 1 --Fmax 47900
+```

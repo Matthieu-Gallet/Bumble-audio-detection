@@ -32,7 +32,7 @@ def get_fig_indices(Df, indices, time_axe):
 
 def get_sample_fig(file, path, transpose, mode, save, fminmax = None, cminmax = None, dB = 'Log', shift = 0):
 
-    if cminmax == None : cminmax = (-40, 0)
+    if cminmax == None : cminmax = (-100, -30)
 
     x, sr = torchaudio.load(os.path.join(path, file + '.flac'), format='flac')
     x_numpy = x[0,:].numpy()
@@ -40,9 +40,9 @@ def get_sample_fig(file, path, transpose, mode, save, fminmax = None, cminmax = 
 
 
     #### Save to tmp assets
-    if fminmax is not None:
-        b, a = signal.butter(2, fminmax ,fs=sr, btype='band')
-        x_numpy = signal.filtfilt(b, a, x_numpy)
+    #if fminmax is not None:
+    #    b, a = signal.butter(2, fminmax ,fs=sr, btype='band')
+    #    x_numpy = signal.filtfilt(b, a, x_numpy)
 
 
     #### transpose

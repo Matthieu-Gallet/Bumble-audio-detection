@@ -91,24 +91,24 @@ file_card_audio = dbc.Card(
                                               value=1, style={'width': 100}),
                         dbc.Label('      fmax'),
                         dcc.Input(id='fmax', type="number",#,label="Fmax",
-                                              value=10000, style={'width': 100}),
+                                              value=46000, style={'width': 100}),
                         html.Br(),html.Br(),
 
                         dbc.Label("color lim (dB)", style={'font-weight': 'bold'}),
                         html.Br(),
                         dbc.Label('cmin  '),
                         dcc.Input(id="cmin", type="number",#,label="Fmin",
-                                              value=-40, style={'width': 100}),
+                                              value=-100, style={'width': 100}),
                         dbc.Label('      cmax'),
                         dcc.Input(id='cmax', type="number",#,label="Fmax",
-                                              value=0, style={'width': 100}),
+                                              value=-30, style={'width': 100}),
                         
                         html.Br(),html.Br(),
                         dbc.Label("Frequency calculation", style={'font-weight': 'bold'}),
                         dcc.Dropdown(id='Scale', options=['STFT', 'MFCC'], value='MFCC'), 
                         html.Br(),
                         dbc.Label("Frequency Scale", style={'font-weight': 'bold'}),
-                        dcc.Dropdown(id='Scale_dB', options=['Lin', 'Log'], value='Log'), 
+                        dcc.Dropdown(id='Scale_dB', options=['Lin', 'Log'], value='Lin'), 
                         html.Br(),html.Br(),
                         dbc.Label("Pitch shift (octave) ", style={'font-weight': 'bold'}),
                         dcc.Input(id='audio_params', type="number",#,label="Fmax",
@@ -206,4 +206,4 @@ def update_signal(clickData, src, mode, dB, fmin, fmax, cmin, cmax, shift):
     return(fig_g.get_sample_fig(Df['datetime'][idx], AUDIO_PATH, None, mode, src, (fmin, fmax), (cmin, cmax), dB, shift),  src)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port=8054)
+    app.run_server(host='localhost',debug=False, port=8054)

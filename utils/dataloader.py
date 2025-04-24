@@ -75,6 +75,6 @@ def get_dataloader_site(path_wavfile, meta_site ,Fmin, Fmax, savepath, len_audio
 
     site_set = Silent_dataset(meta_dataloader.reset_index(drop=True),Fmin, Fmax, np.min(meta_site['dB']),len_audio_s, savepath, save_audio)
     site_set = torch.utils.data.DataLoader(
-        site_set,shuffle=False, batch_size=batch_size)#,  num_workers=NUM_CORE)
+        site_set,shuffle=False, batch_size=batch_size,num_workers=8)#,  num_workers=NUM_CORE)
 
     return site_set

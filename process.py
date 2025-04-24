@@ -39,8 +39,8 @@ AUDIO_FORMAT = args.audio_format
 LEN_AUDIO = args.length_audio_segment
 
 if PROCESS_TAG:
-    if LEN_AUDIO != 10:
-        raise('With tagging, length_audio_segment must be 10')
+    if LEN_AUDIO < 5:
+        raise ValueError('With tagging, length_audio_segment must be more than 5')
     
 
 csvfile = os.path.join(args.save_path, f'indices_{args.name}.csv')
@@ -55,7 +55,7 @@ if len(df_files) == 0:
 
 # get data loader
 dl = dataloader.get_dataloader_site(args.data_path, df_files, Fmin = args.Fmin, Fmax = args.Fmax, savepath = audio_savepath, len_audio_s  = LEN_AUDIO, save_audio=args.save_audio_flac, batch_size = 12)
-df_site = {'datetime':[], 'name':[], 'start':[]}
+df_site = {'datetime':[], 'name':[],'flacfile':[], 'start':[]}
 if PROCESS_TAG:
     df_site['clipwise_output'] =  []
     df_site['embedding'] = []  
@@ -72,6 +72,7 @@ for batch_idx, (inputs, info) in enumerate(tqdm(dl)):
     for idx, date_ in enumerate(info['date']):
         df_site['datetime'].append(str(date_)) 
         df_site['name'].append(str(info['name'][idx]))
+        df_site['flacfile'].append(str(date_)+'.flac')
         df_site['start'].append(float(info['start'][idx]))
         if PROCESS_TAG:
             df_site['clipwise_output'].append(clipwise_output[idx])

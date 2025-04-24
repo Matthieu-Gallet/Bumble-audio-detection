@@ -88,6 +88,7 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
     Df_new['name'] = Df['name']
     Df_new['start'] = Df['start']
     Df_new['datetime'] = Df['datetime']
+    Df_new['flacfile'] = Df['flacfile']
 
     ### Now let s generate another csv to have the matching with categories of the manual identification protocol
     ### to do that, we take the maximum probability in the subcategory identified by the dictionnary 
@@ -107,7 +108,9 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
     ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
     ### For that, we group the categories accordingly : 
 
-    macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Music', 'Dog bark', 'Kitchen sounds', 'Rolling shutter']}
+    macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Music', 'Kitchen sounds', 'Rolling shutter'],
+    'buzz':['Buzz'],
+    'domesticanimals':['Dog bark','Rooster']}
 
 
     ### and now we will calculate the average probability in each of the three macro categories 
