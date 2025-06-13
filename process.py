@@ -16,7 +16,8 @@ from indices import name_indicies
 
 
 
-checkpoint_path = 'ResNet22_mAP=0.430.pth'
+parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
+
 
 parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
 parser.add_argument('--data_path', default='example/audio/0002/', type=str, help='Path to wav files')
@@ -27,7 +28,7 @@ parser.add_argument('--process_indices', default=1, type=int, help='Process indi
 parser.add_argument('--audio_format', default='wav', type=str, help='wav or flac')
 parser.add_argument('--length_audio_segment', default=10, type=int, help='Length of analyzing window MUST BE LOWER THAN SIGNAL LENGTH')
 parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
-
+parser.add_argument('--checkpoint_path', default='ResNet22_mAP=0.430.pth', type=str, help='Path to the model checkpoint')
 parser.add_argument('--Fmin', default=100, type=float, help='Freq min (filter)')
 parser.add_argument('--Fmax', default=10**4, type=float, help='Freq max (filter)')
 args = parser.parse_args()
@@ -37,7 +38,9 @@ print( PROCESS_TAG)
 PROCESS_Indices = args.process_indices
 AUDIO_FORMAT = args.audio_format
 LEN_AUDIO = args.length_audio_segment
-
+checkpoint_path = args.checkpoint_path  # Will be set after parsing arguments
+model_str = checkpoint_path.split('_')[0]  # Extract model type from checkpoint name
+print(f'Using model: {model_str}')
 if PROCESS_TAG:
     if LEN_AUDIO < 5:
         raise ValueError('With tagging, length_audio_segment must be more than 5')
@@ -67,7 +70,7 @@ for batch_idx, (inputs, info) in enumerate(tqdm(dl)):
     #print(info)
     if PROCESS_TAG:
         with torch.no_grad():
-            clipwise_output, labels, sorted_indexes, embedding = audio_tagging(inputs, checkpoint_path , usecuda=False)
+            clipwise_output, labels, sorted_indexes, embedding = audio_tagging(inputs, checkpoint_path , usecuda=False,model_type=model_str)
 
     for idx, date_ in enumerate(info['date']):
         df_site['datetime'].append(str(date_)) 
