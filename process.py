@@ -11,8 +11,6 @@ from utils import dataloader
 from utils.tagging_validation import tagging_validate
 from audioset_tagging_cnn.inference import audio_tagging
 
-from indices import name_indices
-
 parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
 parser.add_argument('--data_path', default='example/audio/0002/', type=str, help='Path to wav files')
 parser.add_argument('--save_path', default='example/metadata/', type=str, help='Path to save meta data')
@@ -23,17 +21,14 @@ parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio
 parser.add_argument('--checkpoint_path', default='ResNet22_mAP=0.430.pth', type=str, help='Path to the model checkpoint')
 args = parser.parse_args()
 
-PROCESS_TAG = args.process_tagging
-print( PROCESS_TAG)
-PROCESS_Indices = args.process_indices
 AUDIO_FORMAT = args.audio_format
 LEN_AUDIO = args.length_audio_segment
 checkpoint_path = args.checkpoint_path  # Will be set after parsing arguments
 model_str = checkpoint_path.split('_')[0]  # Extract model type from checkpoint name
 print(f'Using model: {model_str}')
-if PROCESS_TAG:
-    if LEN_AUDIO < 5:
-        raise ValueError('With tagging, length_audio_segment must be more than 5')
+
+if LEN_AUDIO < 5:
+    raise ValueError('With tagging, length_audio_segment must be more than 5')
     
 
 csvfile = os.path.join(args.save_path, f'indices_{args.name}.csv')
