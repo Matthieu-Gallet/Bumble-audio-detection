@@ -12,16 +12,10 @@ from scipy.signal import resample
 
 from indices import compute_ecoacoustics
 import torchaudio
-len_audio_s = 10
-
-NUM_CORE = 4
-
 
 class Silent_dataset(Dataset):
-    def __init__(self, meta_dataloader,  Fmin, Fmax, refdB, len_audio_s, savepath, save_audio = True):
-        self.ref_dB = refdB                
-        self.meta = meta_dataloader
-        self.Fmin, self.Fmax = Fmin, Fmax
+    def __init__(self, meta_dataloader, len_audio_s, savepath, save_audio = True):        
+        self.meta = meta_dataloader        
         self.sr_tagging = 32000
         self.savepath = savepath
         self.len_audio_s = len_audio_s
@@ -32,6 +26,7 @@ class Silent_dataset(Dataset):
         
         filename = self.meta['filename'][idx]
 
+        # Load audio file, convert to mono, and apply offset and duration
         wav_o, sr = librosa.load(filename, sr=None, mono=True,
                               offset=self.meta['start'][idx], duration=self.len_audio_s)
         wav = torch.tensor(wav_o).view(1, len(wav_o))
@@ -39,8 +34,10 @@ class Silent_dataset(Dataset):
         if self.save_audio:
             torchaudio.save(os.path.join(self.savepath, self.meta['date'][idx].strftime('%Y%m%d_%H%M%S')+ '.flac'), wav, sr, format = 'flac')
 
-        ecoac = compute_ecoacoustics(wav_o, sr, self.ref_dB,self.Fmin, self.Fmax)
+        # Compute ecoacoustic indices
+        ecoac = compute_ecoacoustics(wav_o)
         
+        # Resample to audio tagging model sample rate
         wav = resample(wav_o, int(self.len_audio_s*self.sr_tagging))
         wav = torch.tensor(wav)
         
@@ -52,7 +49,7 @@ class Silent_dataset(Dataset):
     def __len__(self):
         return len(self.meta['filename'])
     
-def get_dataloader_site(path_wavfile, meta_site ,Fmin, Fmax, savepath, len_audio_s , save_audio = True, batch_size=12):
+def get_dataloader_site(meta_site, savepath, len_audio_s , save_audio = True, batch_size=12):
 
     meta_dataloader = pd.DataFrame(
         columns=['filename', 'sr', 'start', 'stop'])
@@ -73,7 +70,7 @@ def get_dataloader_site(path_wavfile, meta_site ,Fmin, Fmax, savepath, len_audio
                     [win*len_audio_s]), 'stop': [((win+1)*len_audio_s)], 'len': [len_file], 'date': meta_site['datetime'][idx] + delta})
             meta_dataloader = pd.concat([meta_dataloader,curmeta], ignore_index=True)
 
-    site_set = Silent_dataset(meta_dataloader.reset_index(drop=True),Fmin, Fmax, np.min(meta_site['dB']),len_audio_s, savepath, save_audio)
+    site_set = Silent_dataset(meta_dataloader.reset_index(drop=True),len_audio_s, savepath, save_audio)
     site_set = torch.utils.data.DataLoader(
         site_set,shuffle=False, batch_size=batch_size,num_workers=8)#,  num_workers=NUM_CORE)
 
