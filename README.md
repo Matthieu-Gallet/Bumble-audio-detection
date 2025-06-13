@@ -1,8 +1,4 @@
-# EAVT
-Eco-Acoustic Visualization Tools
-
-# Currently in development
-
+Automatic Audio tagging of large collection of soundscapes using PANNs.
 
 ## How to use
 
@@ -18,7 +14,7 @@ Finally, use the dash_app.py script to run the web application.
 **First download the ResNet22 pretrained model using instructions [here](https://github.com/qiuqiangkong/audioset_tagging_cnn#audio-tagging-using-pretrained-models)**
 
 ```
-python process.py [-h] [--data_path DATA_PATH] [--save_path SAVE_PATH] [--name NAME] [--process_tagging PROCESS_TAGGING] [--process_indices PROCESS_INDICES] [--audio_format AUDIO_FORMAT][--length_audio_segment LENGTH_AUDIO_SEGMENT] [--save_audio_flac SAVE_AUDIO_FLAC] [--Fmin FMIN] [--Fmax FMAX]
+python process.py [-h] [--data_path DATA_PATH] [--save_path SAVE_PATH] [--name NAME] [--audio_format AUDIO_FORMAT] [--l LENGTH_AUDIO_SEGMENT] [--save_audio_flac SAVE_AUDIO_FLAC] 
 
 Script to process sound files recorded by Audiomoth
 
@@ -28,33 +24,23 @@ options:
                         Path to wav files
   --save_path SAVE_PATH
                         Path to save meta data
-  --name NAME           name of measurement
-  --process_tagging PROCESS_TAGGING
-                        Process tagging 0 or 1
-  --process_indices PROCESS_INDICES
-                        Process indices 0 or 1
+  --name NAME           name of measurement  
   --audio_format AUDIO_FORMAT
                         wav or flac
-  --length_audio_segment LENGTH_AUDIO_SEGMENT
-                        Length of analyzing window MUST BE LOWER THAN SIGNAL LENGTH
+  --l LENGTH_AUDIO_SEGMENT
+                        Window length in seconds, must be larger than 5
   --save_audio_flac SAVE_AUDIO_FLAC
                         Saving audio in flac format (needed to run visualization tool)
-  --Fmin FMIN           Freq min (filter)
-  --Fmax FMAX           Freq max (filter)
 
 ```
 ### Example
 
 ```
-python3 process.py --save_path example/metadata/ --data_path example/metadata/audio_0002/ --name 0004 --audio_format flac --length_audio_segment 3 --process_tagging 0
+python3 process.py --save_path example/metadata/ --data_path example/metadata/audio_0002/ --name 0004 --audio_format flac --length_audio_segment 5 
 ```
-processing only ecoacoustic indices of flac format audio files on 3 s segment length.
+Tagging of all flac files in folder example/metadata/audio_002 in non-overlapping chunks of 5 seconds. 
 
-
-Eco-acoustic indices can be added in the script indices.py.
-The name of the index must be added in the list `name_indices` and the calculation part in the function `compute_ecoacoustics`. 
-
-Each wav file is divided into 10 second segments and converted to flac.
+Each chunk is converted to flac and saved.
 
 
 ## Dash app
@@ -71,12 +57,4 @@ options:
   --name NAME           name of measurement
 ```
 
-
-
 Code for Audioset Tagging CNN from [Qiu Qiang Kong](https://github.com/qiuqiangkong/audioset_tagging_cnn)
-Code for Eco-acoustic indices from [Patric Guyot](https://github.com/patriceguyot/Acoustic_Indices) and [Sylvain Haupert and Juan Sebastian Ulloa](https://github.com/scikit-maad/scikit-maad)
-
-## Specific settings for Buzz Detection 
-```
-python process.py --save_audio_flac 1 --data_path /home/nfarrugi/Documents/datasets/BumbleBuzz/BumbleBuzz/$curdir --name $curdir --Fmax 15999 --length_audio_segment 5 --process_tagging 1 --save_path /home/nfarrugi/Documents/datasets/BumbleBuzz/BumbleBuzz/detection --audio_format wav
-```
