@@ -1,13 +1,13 @@
 ### modified from https://github.com/qiuqiangkong/audioset_tagging_cnn
 import torch
-from audioset_tagging_cnn.models import *
-from audioset_tagging_cnn.config import sample_rate,classes_num,labels
 import torch.nn as nn
 from huggingface_hub import PyTorchModelHubMixin
 from huggingface_hub import ModelCard
 from torchinfo import summary
+from models import *
+from utils.config import sample_rate,classes_num,labels
 
-def load_panns_model(checkpoint_path,window_size=1024,hop_size=320,mel_bins=64,fmin=50,fmax=14000,model_type="ResNet22"):
+def define_panns_model(window_size=1024,hop_size=320,mel_bins=64,fmin=50,fmax=14000,model_type="ResNet22"):
     """Inference audio tagging result of an audio clip.
     """
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -21,11 +21,6 @@ def load_panns_model(checkpoint_path,window_size=1024,hop_size=320,mel_bins=64,f
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)
     
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint['model'])
-
-    model.eval()
-
     return model
 
 
@@ -41,11 +36,11 @@ class PANNS_Model(
         docs_url="https://github.com/qiuqiangkong/audioset_tagging_cnn",
         # ^ optional metadata to generate model card
     ):
-    def __init__(self, checkpoint_path="ResNet22_mAP=0.430.pth",model_type="ResNet22"):
+    def __init__(self, model_type="ResNet22"):
         super().__init__()
         
-        self.backbone = load_panns_model(
-            checkpoint_path=checkpoint_path,
+        self.backbone = define_panns_model(            
+            sample_rate=sample_rate,
             window_size=1024,
             hop_size=320,
             mel_bins=64,
@@ -54,7 +49,13 @@ class PANNS_Model(
             model_type=model_type
         )
 
-        
+    def load_checkpoint(self, checkpoint_path):
+        """Load model checkpoint."""
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+        self.backbone.load_state_dict(checkpoint['model'])
+        self.backbone.eval()
+
     def forward(self, x):
         return self.backbone(x)
 
@@ -79,7 +80,7 @@ def inference(model,waveform, usecuda=False):
         
     return clipwise_output, labels, sorted_indexes, embedding
 
-## add the __main__ function to run the model and save it
+## This can be called to convert a model and push it to Hugging Face Hub
 if __name__ == "__main__":
     import argparse
 
@@ -88,17 +89,17 @@ if __name__ == "__main__":
     parser.add_argument('--model_type', default='ResNet22', type=str, help='Type of the model (e.g., ResNet22, MobileNetV2)')
     args = parser.parse_args()
 
-    model = PANNS_Model(checkpoint_path="MobileNetV2_mAP=0.383.pth",model_type="MobileNetV2")
-
+    model = PANNS_Model(model_type=args.model_type)
+    model.load_checkpoint(args.checkpoint_path)
     print(summary(model)) 
 
-    model.save_pretrained("panns_MobileNetV2")
+    model.save_pretrained(f"panns_{args.model_type}")]")
 
-    model.push_to_hub("nicofarr/panns_MobileNetV2")
+    model.push_to_hub(f"nicofarr/panns_{args.model_type}")
 
-    model = PANNS_Model.from_pretrained("nicofarr/panns_MobileNetV2")
+    model = PANNS_Model.from_pretrained(f"nicofarr/panns_{args.model_type}")
     print(summary(model))
 
-    card = ModelCard.load("nicofarr/panns_MobileNetV2")
+    card = ModelCard.load(f"nicofarr/panns_{args.model_type}")
     print(card.data.tags)
     print(card.data.library_name)
