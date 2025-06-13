@@ -1,16 +1,10 @@
 import os
 import argparse
 from tqdm import tqdm
-
 import pandas as pd
-import torch
-
 from utils import metadata
 from utils import dataloader
-
 from utils.tagging_validation import tagging_validate
-from audioset_tagging_cnn.inference import audio_tagging
-
 from hfmodel import PANNS_Model,inference
 
 parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
