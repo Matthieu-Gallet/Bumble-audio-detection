@@ -14,19 +14,14 @@ parser.add_argument('--name', default='', type=str, help='name of measurement')
 parser.add_argument('--audio_format', default='wav', type=str, help='wav or flac')
 parser.add_argument('--l', default=10, type=int, help='Window length in seconds for audio tagging / must be more than 5 seconds')
 parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
-parser.add_argument('--checkpoint_path', default='ResNet22_mAP=0.430.pth', type=str, help='Path to the model checkpoint')
 args = parser.parse_args()
 
 AUDIO_FORMAT = args.audio_format
 LEN_AUDIO = args.l
-checkpoint_path = args.checkpoint_path  # Will be set after parsing arguments
-model_str = checkpoint_path.split('_')[0]  # Extract model type from checkpoint name
-print(f'Using model: {model_str}')
 
 if LEN_AUDIO < 5:
     raise ValueError('With tagging, length_audio_segment must be more than 5')
     
-
 csvfile = os.path.join(args.save_path, f'indices_{args.name}.csv')
 audio_savepath = os.path.join(args.save_path, f'audio_{args.name}')
 if not os.path.exists(audio_savepath):
