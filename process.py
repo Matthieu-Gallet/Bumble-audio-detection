@@ -11,18 +11,20 @@ from utils import dataloader
 from utils.tagging_validation import tagging_validate
 from audioset_tagging_cnn.inference import audio_tagging
 
+from hfmodel import PANNS_Model,inference
+
 parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
 parser.add_argument('--data_path', default='example/audio/0002/', type=str, help='Path to wav files')
 parser.add_argument('--save_path', default='example/metadata/', type=str, help='Path to save meta data')
 parser.add_argument('--name', default='', type=str, help='name of measurement')
 parser.add_argument('--audio_format', default='wav', type=str, help='wav or flac')
-parser.add_argument('--length_audio_segment', default=10, type=int, help='Length of analyzing window MUST BE LOWER THAN SIGNAL LENGTH')
+parser.add_argument('--l', default=10, type=int, help='Window length in seconds for audio tagging / must be more than 5 seconds')
 parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
 parser.add_argument('--checkpoint_path', default='ResNet22_mAP=0.430.pth', type=str, help='Path to the model checkpoint')
 args = parser.parse_args()
 
 AUDIO_FORMAT = args.audio_format
-LEN_AUDIO = args.length_audio_segment
+LEN_AUDIO = args.l
 checkpoint_path = args.checkpoint_path  # Will be set after parsing arguments
 model_str = checkpoint_path.split('_')[0]  # Extract model type from checkpoint name
 print(f'Using model: {model_str}')
@@ -49,10 +51,13 @@ df_site['embedding'] = []
 df_site['sorted_indexes'] = []
 df_site['dB'] = []
 
+## Initialize audio tagging model 
+model = PANNS_Model.from_pretrained("nicofarr/panns_MobileNetV2")
+model.eval()
+
 for batch_idx, (inputs, info) in enumerate(tqdm(dl)):
     
-    with torch.no_grad():
-        clipwise_output, labels, sorted_indexes, embedding = audio_tagging(inputs, checkpoint_path , usecuda=False,model_type=model_str)
+    clipwise_output, labels, sorted_indexes, embedding = inference(model, inputs, usecuda=False)
 
     for idx, date_ in enumerate(info['date']):
         df_site['datetime'].append(str(date_)) 
