@@ -5,7 +5,7 @@ import pandas as pd
 from utils import metadata
 from utils import dataloader
 from utils.tagging_validation import tagging_validate
-from hfmodel import PANNS_Model,inference
+from models import PANNS_Model,inference
 
 parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
 parser.add_argument('--data_path', default='example/audio/0002/', type=str, help='Path to wav files')
