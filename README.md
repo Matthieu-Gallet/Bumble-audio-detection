@@ -18,10 +18,10 @@ Script to process sound files recorded by Audiomoth
 options:
   -h, --help            show this help message and exit
   --data_path DATA_PATH
-                        Path to wav files
+                        Path to a folder with wav / flac files
   --save_path SAVE_PATH
-                        Path to save meta data
-  --name NAME           name of measurement  
+                        Path to save outputs and audio files. folder will be created if does not exist
+  --name NAME           name of measurement - you can put whatever you want, for example the name of the site 
   --audio_format AUDIO_FORMAT
                         wav or flac
   --l LENGTH_AUDIO_SEGMENT
@@ -49,8 +49,8 @@ Script to display sound files recorded by Audiomoth
 options:
   -h, --help            show this help message and exit
   --save_path SAVE_PATH
-                        Path to save meta data
-  --name NAME           name of measurement
+                        Path to folder output of process.py : has to be the one that was entered when launching process.py
+  --name NAME           name of measurement : has to be the one that was entered when launching process.py
 ```
 
 Code for Audioset Tagging CNN from [Qiu Qiang Kong](https://github.com/qiuqiangkong/audioset_tagging_cnn)
