@@ -15,6 +15,8 @@ parser.add_argument('--audio_format', default='wav', type=str, help='wav or flac
 parser.add_argument('--l', default=10, type=int, help='Window length in seconds for audio tagging / must be more than 5 seconds')
 parser.add_argument('--model_type', default='MobileNetV2', type=str, help='Type of the model (e.g., ResNet22, MobileNetV2)')
 parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
+parser.add_argument('--multiprocessing', default=1, type=int, help='Number of processes to use for data loading')
+parser.add_argument('--batch_size', default=12, type=int, help='Size of the batch for data loading')
 args = parser.parse_args()
 
 AUDIO_FORMAT = args.audio_format
@@ -34,7 +36,7 @@ if len(df_files) == 0:
     raise('No audio file found')
 
 # get data loader
-dl = dataloader.get_dataloader_site(df_files, savepath = audio_savepath, len_audio_s  = LEN_AUDIO, save_audio=args.save_audio_flac, batch_size = 12)
+dl = dataloader.get_dataloader_site(df_files, savepath = audio_savepath, len_audio_s  = LEN_AUDIO, save_audio=args.save_audio_flac, batch_size = args.batch_size, num_workers=args.multiprocessing)
 df_site = {'datetime':[], 'name':[],'flacfile':[], 'start':[]}
 df_site['clipwise_output'] =  []
 df_site['embedding'] = []  
