@@ -13,6 +13,7 @@ parser.add_argument('--save_path', default='example/metadata/', type=str, help='
 parser.add_argument('--name', default='', type=str, help='name of measurement')
 parser.add_argument('--audio_format', default='wav', type=str, help='wav or flac')
 parser.add_argument('--l', default=10, type=int, help='Window length in seconds for audio tagging / must be more than 5 seconds')
+parser.add_argument('--model_type', default='MobileNetV2', type=str, help='Type of the model (e.g., ResNet22, MobileNetV2)')
 parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
 args = parser.parse_args()
 
@@ -41,7 +42,7 @@ df_site['sorted_indexes'] = []
 df_site['dB'] = []
 
 ## Initialize audio tagging model 
-model = PANNS_Model.from_pretrained("nicofarr/panns_MobileNetV2")
+model = PANNS_Model.from_pretrained(f"nicofarr/panns_{args.model_type}")
 model.eval()
 
 for batch_idx, (inputs, info) in enumerate(tqdm(dl)):

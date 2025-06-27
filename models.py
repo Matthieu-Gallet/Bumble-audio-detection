@@ -2835,7 +2835,7 @@ if __name__ == "__main__":
 
     model = PANNS_Model(model_type=args.model_type)
     model.load_checkpoint(args.checkpoint_path)
-    print(summary(model)) 
+    print(summary(model,input_size=(1, 32000 * 5))) 
 
     model.save_pretrained(f"panns_{args.model_type}")
 
