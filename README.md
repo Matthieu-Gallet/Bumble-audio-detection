@@ -45,7 +45,7 @@ options:
                         Saving audio in flac format (needed to run visualization tool)
 
 ```
-
+There are other options (such as the type of pretrained model to use), please check the source code if necessary.
 ### Example
 
 ```
