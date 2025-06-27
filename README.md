@@ -1,8 +1,23 @@
-Automatic Audio tagging of large collection of soundscapes using PANNs - specific branch for BumbleBuzz project. 
+Automatic Audio tagging of large collection of soundscapes using PANNs - specific branch for BumbleBuzz project.
+
+## Requirements
+
+Install the following dependencies (versions should not matter) using your favorite package manager (pip, conda, ...)
+
+- huggingface_hub
+- pandas
+- pytorch
+- torchaudio
+- librosa
+- numpy
+- scipy
+- torchinfo
+- plotly (optional, for the dash app)
+- dash (optional, for the dash app)
 
 ## How to use
 
-First, create a directory with wav audio files named YYMMDD_HHMMSS.wav/flac or What_EVER_YYMMDD_HHMMSS.wav/flac. 
+First, create a directory with wav audio files named YYMMDD_HHMMSS.wav/flac or What_EVER_YYMMDD_HHMMSS.wav/flac.
 Then, use process.py to perform buzz detection (+many other audio tagging).
 Finally, use the dash_app.py script to run the web application.
 
@@ -30,12 +45,14 @@ options:
                         Saving audio in flac format (needed to run visualization tool)
 
 ```
+
 ### Example
 
 ```
 python3 process.py --save_path example/metadata/ --data_path example/metadata/audio_0002/ --name 0004 --audio_format flac --l 5 
 ```
-Tagging of all flac files in folder example/metadata/audio_002 in non-overlapping chunks of 5 seconds. 
+
+Tagging of all flac files in folder example/metadata/audio_002 in non-overlapping chunks of 5 seconds.
 
 Each chunk is converted to flac and saved.
 
