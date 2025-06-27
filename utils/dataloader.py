@@ -49,7 +49,7 @@ class Silent_dataset(Dataset):
     def __len__(self):
         return len(self.meta['filename'])
     
-def get_dataloader_site(meta_site, savepath, len_audio_s , save_audio = True, batch_size=12):
+def get_dataloader_site(meta_site, savepath, len_audio_s , save_audio = True, batch_size=12,  num_workers=8):
 
     meta_dataloader = pd.DataFrame(
         columns=['filename', 'sr', 'start', 'stop'])
@@ -72,6 +72,6 @@ def get_dataloader_site(meta_site, savepath, len_audio_s , save_audio = True, ba
 
     site_set = Silent_dataset(meta_dataloader.reset_index(drop=True),len_audio_s, savepath, save_audio)
     site_set = torch.utils.data.DataLoader(
-        site_set,shuffle=False, batch_size=batch_size,num_workers=8)#,  num_workers=NUM_CORE)
+        site_set,shuffle=False, batch_size=batch_size,  num_workers=num_workers)
 
     return site_set
