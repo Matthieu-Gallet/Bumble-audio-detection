@@ -16,7 +16,10 @@ from pathlib import Path
 
 # Add config to path
 sys.path.append(
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "config",
+    )
 )
 
 try:
