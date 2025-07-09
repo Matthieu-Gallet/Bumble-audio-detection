@@ -27,7 +27,10 @@ def test_folder_discovery():
         scripts_dir = os.path.dirname(current_dir)
         sys.path.append(scripts_dir)
 
-        from batch_process import find_data_directories, find_annotation_directories
+        from workflow.final_batch_process import (
+            find_data_directories,
+            find_annotation_directories,
+        )
 
         parent_dir = os.path.dirname(os.path.dirname(current_dir))
         BASE_DATA_PATH = os.path.join(parent_dir, "data")
@@ -116,7 +119,7 @@ def test_process_script():
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(os.path.dirname(current_dir))
-        from batch_process import find_data_directories
+        from workflow.final_batch_process import find_data_directories
 
         BASE_DATA_PATH = os.path.join(parent_dir, "data")
 
@@ -178,11 +181,10 @@ def test_evaluation_functions():
                 return False
 
         # Test import of advanced analysis functions
-        # batch_process already imported above
-        from batch_process import (
+        # workflow.final_batch_process already imported above
+        from workflow.final_batch_process import (
             find_optimal_threshold,
             analyze_false_positives_classes,
-            create_confusion_matrix_by_class,
             run_analysis_with_optimal_threshold,
         )
 

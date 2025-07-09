@@ -21,40 +21,6 @@ def show_main_readme():
         print("❌ Main README.md not found")
 
 
-def show_config_docs():
-    """Show configuration documentation."""
-    config_readme = "config/README.md"
-    if os.path.exists(config_readme):
-        print("\n⚙️  CONFIGURATION DOCUMENTATION")
-        print("=" * 50)
-        with open(config_readme, "r", encoding="utf-8") as f:
-            content = f.read()
-            print(content)
-    else:
-        print("❌ Configuration README not found")
-
-
-def show_workflow_docs():
-    """Show workflow-specific documentation."""
-    workflow_files = [
-        "REFACTORING_FINAL_SUCCESS.md",
-        "REFACTORING_FINAL_COMPLETE.md",
-        "BATCH_PROCESS_MOVE_SUMMARY.md",
-    ]
-
-    for doc_file in workflow_files:
-        if os.path.exists(doc_file):
-            print(f"\n📋 {doc_file.upper()}")
-            print("=" * 50)
-            with open(doc_file, "r", encoding="utf-8") as f:
-                content = f.read()
-                # Show only first 500 characters for summary
-                if len(content) > 500:
-                    content = content[:500] + "...\n[Full content available in file]"
-                print(content)
-            break
-
-
 def show_usage_examples():
     """Show usage examples."""
     print("\n🚀 USAGE EXAMPLES")
@@ -99,10 +65,8 @@ def show_menu():
     print("📚 AUDIO DETECTION SYSTEM DOCUMENTATION")
     print("=" * 50)
     print("1. Main README")
-    print("2. Configuration Guide")
-    print("3. Workflow Documentation")
-    print("4. Usage Examples")
-    print("5. Exit")
+    print("2. Usage Examples")
+    print("3. Exit")
     print()
 
 
@@ -118,18 +82,14 @@ def main():
             if choice == "1":
                 show_main_readme()
             elif choice == "2":
-                show_config_docs()
-            elif choice == "3":
-                show_workflow_docs()
-            elif choice == "4":
                 show_usage_examples()
-            elif choice == "5":
+            elif choice == "3":
                 print("📖 Documentation viewer closed.")
                 break
             else:
-                print("Invalid option. Please choose 1-5.")
+                print("Invalid option. Please choose 1-3.")
 
-            if choice in ["1", "2", "3", "4"]:
+            if choice in ["1", "2", "3"]:
                 input("\nPress Enter to continue...")
 
         except KeyboardInterrupt:

@@ -89,7 +89,7 @@ config_dir = os.path.join(current_dir, "..", "config")
 sys.path.insert(0, config_dir)
 
 try:
-    from config_loader import load_config
+    from config.config_loader import load_config
 
     config = load_config()
 
