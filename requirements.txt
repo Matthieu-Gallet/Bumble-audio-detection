@@ -1,0 +1,14 @@
+huggingface_hub
+pandas
+torch
+torchaudio
+librosa
+numpy==2.2.0  # specify version to avoid issues with numpy 2.3.0
+scipy
+torchinfo
+safetensors
+matplotlib
+seaborn
+scikit-learn
+plotly  # optional, for the dash app
+dash  # optional, for the dash app

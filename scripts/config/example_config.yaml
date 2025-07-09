@@ -1,0 +1,61 @@
+# Example Custom Configuration
+# Copy this file and modify as needed
+
+# =============================================================================
+# QUICK SETUP - MODIFY THESE FOR YOUR NEEDS
+# =============================================================================
+
+# Analysis mode: "individual" (per session), "combined" (all together), or "both"
+analysis:
+  mode: "both"
+  
+  # Which columns to analyze - add or remove as needed
+  columns:
+    - "tag_Buzz"
+    - "tag_Insect"
+    - "tag_Bird"
+    - "buzz"
+    - "biophony"
+
+# Target specific sessions (leave empty to analyze all)
+sessions:
+  target_sessions: []
+  # Example: target specific sessions
+  # target_sessions:
+  #   - "20240408_session_01_Tent_SM05_T"
+  #   - "20240612_session_02_Tent_SM06_T"
+  
+  # Skip data processing - useful for re-running evaluation only
+  skip_processing: false
+
+# Audio processing settings
+processing:
+  segment_length: 5        # seconds
+  audio_format: "wav"      # file format to look for
+  timeout: 1800           # processing timeout in seconds
+
+# =============================================================================
+# ADVANCED SETTINGS - USUALLY DON'T NEED TO CHANGE
+# =============================================================================
+
+# Paths (relative to project root)
+paths:
+  data_dir: "data"
+  python_path: ".venv/bin/python"
+  process_script: "process.py"
+  output_dir: "output_batch"
+
+# Evaluation settings
+evaluation:
+  features:
+    optimal_threshold: true
+    error_analysis: true
+    class_breakdown: true
+    visualizations: true
+    cross_session_comparison: true
+
+# Visualization settings
+visualization:
+  dpi: 300
+  figure_size: [15, 10]
+  save_format: "png"

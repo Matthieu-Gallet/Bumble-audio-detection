@@ -1,0 +1,145 @@
+# Workflow Configuration File
+# This file contains all the configuration settings for the final_batch_process.py script
+
+# =============================================================================
+# PATH CONFIGURATION
+# =============================================================================
+
+# Base paths (can be absolute or relative to project root)
+paths:
+  # Data directory containing all session folders
+  data_dir: "data"
+  
+  # Python executable path (relative to project root)
+  python_path: ".venv/bin/python"
+  
+  # Main processing script path (relative to project root)
+  process_script: "process.py"
+  
+  # Output directory for all results
+  output_dir: "output_batch"
+
+# =============================================================================
+# PROCESSING CONFIGURATION
+# =============================================================================
+
+processing:
+  # Segment length in seconds for audio processing
+  segment_length: 5
+  
+  # Audio format to look for
+  audio_format: "wav"
+  
+  # Processing timeout in seconds (1800 = 30 minutes)
+  timeout: 1800
+
+# =============================================================================
+# ANALYSIS CONFIGURATION
+# =============================================================================
+
+analysis:
+  # Analysis mode: "individual", "combined", or "both"
+  mode: "both"
+  
+  # Columns to evaluate (detection columns)
+  columns:
+    - "tag_Buzz"
+    - "tag_Insect" 
+    - "tag_Bird"
+    - "buzz"
+    - "biophony"
+  
+  # Default threshold for standard evaluation
+  default_threshold: 0.5
+  
+  # Duration for evaluation segments
+  evaluation_duration: 5.0
+
+# =============================================================================
+# SESSION CONFIGURATION
+# =============================================================================
+
+sessions:
+  # Specific sessions to analyze (leave empty to analyze all)
+  # Example: ["20240408_session_01_Tent_SM05_T", "20240612_session_02_Tent_SM06_T"]
+  target_sessions: []
+  
+  # Skip data processing and go directly to evaluation
+  skip_processing: false
+
+# =============================================================================
+# EVALUATION CONFIGURATION
+# =============================================================================
+
+evaluation:
+  # Evaluation features to enable/disable
+  features:
+    optimal_threshold: true
+    error_analysis: true
+    class_breakdown: true
+    visualizations: true
+    cross_session_comparison: true
+  
+  # Threshold search parameters
+  threshold_search:
+    min_threshold: 0.0
+    max_threshold: 1.0
+    num_thresholds: 101
+  
+  # Visualization settings
+  visualization:
+    dpi: 300
+    figure_size: [15, 10]
+    save_format: "png"
+
+# =============================================================================
+# OUTPUT CONFIGURATION
+# =============================================================================
+
+output:
+  # File formats to generate
+  formats:
+    csv: true
+    json: true
+    plots: true
+  
+  # Precision for numerical outputs
+  decimal_places: 4
+  
+  # Compression for large files
+  compress_large_files: false
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+
+logging:
+  # Log level: "DEBUG", "INFO", "WARNING", "ERROR"
+  level: "INFO"
+  
+  # Save logs to file
+  save_logs: true
+  
+  # Log file location (relative to output directory)
+  log_file: "workflow_log.txt"
+
+# =============================================================================
+# ADVANCED SETTINGS
+# =============================================================================
+
+advanced:
+  # Parallel processing settings
+  parallel:
+    enabled: false
+    max_workers: 4
+  
+  # Memory optimization
+  memory:
+    chunk_size: 1000
+    clear_cache: true
+  
+  # Error handling
+  error_handling:
+    continue_on_error: true
+    max_retries: 3
+    retry_delay: 5

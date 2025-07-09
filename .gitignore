@@ -145,3 +145,5 @@ tests.ipynb
 test.csv
 
 *.flac
+data/*
+output_batch/*
