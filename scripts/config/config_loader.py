@@ -75,7 +75,7 @@ class WorkflowConfig:
             "processing": {"segment_length": 5, "audio_format": "wav", "timeout": 1800},
             "analysis": {
                 "mode": "both",
-                "columns": ["tag_Buzz", "tag_Insect", "tag_Bird", "buzz", "biophony"],
+                "columns": ["tag_Buzz", "tag_Insect", "biophony"],
                 "default_threshold": 0.5,
                 "evaluation_duration": 5.0,
             },

@@ -89,9 +89,9 @@ config_dir = os.path.join(current_dir, "..", "config")
 sys.path.insert(0, config_dir)
 
 try:
-    from config.config_loader import load_config
+    from config_loader import WorkflowConfig
 
-    config = load_config()
+    config = WorkflowConfig()
 
     # Use configuration values
     BASE_DATA_PATH = config.data_path
@@ -1280,6 +1280,20 @@ def create_cross_session_comparison(
         ]
     )
 
+    # Remove duplicates if any (keep first occurrence)
+    print(f"📊 Standard results before dedup: {len(all_results_df)} rows")
+    all_results_df = all_results_df.drop_duplicates(
+        subset=["session", "column"], keep="first"
+    )
+    print(f"📊 Standard results after dedup: {len(all_results_df)} rows")
+
+    if not all_optimal_df.empty:
+        print(f"📊 Optimal results before dedup: {len(all_optimal_df)} rows")
+        all_optimal_df = all_optimal_df.drop_duplicates(
+            subset=["session", "column"], keep="first"
+        )
+        print(f"📊 Optimal results after dedup: {len(all_optimal_df)} rows")
+
     # Save combined session results
     cross_session_dir = os.path.join(OUTPUT_BASE, "cross_session_analysis")
     os.makedirs(cross_session_dir, exist_ok=True)
@@ -1287,100 +1301,184 @@ def create_cross_session_comparison(
     all_results_df.to_csv(
         os.path.join(cross_session_dir, "all_sessions_standard.csv"), index=False
     )
-    all_optimal_df.to_csv(
-        os.path.join(cross_session_dir, "all_sessions_optimal.csv"), index=False
-    )
+    if not all_optimal_df.empty:
+        all_optimal_df.to_csv(
+            os.path.join(cross_session_dir, "all_sessions_optimal.csv"), index=False
+        )
 
     # Create visualization comparing sessions
     plt.figure(figsize=(20, 12))
 
-    # F1-Score comparison by session and column
-    pivot_f1 = all_results_df.pivot(
-        index="session", columns="column", values="f1_score"
-    )
+    # Check if we have enough data for pivot
+    if len(all_results_df) == 0:
+        print("⚠️  No data available for cross-session comparison")
+        return
 
-    plt.subplot(2, 2, 1)
-    sns.heatmap(
-        pivot_f1, annot=True, fmt=".3f", cmap="Blues", cbar_kws={"label": "F1-Score"}
-    )
-    plt.title("F1-Score by Session and Column (Standard)")
-    plt.ylabel("Session")
-    plt.xlabel("Column")
+    try:
+        # F1-Score comparison by session and column
+        pivot_f1 = all_results_df.pivot(
+            index="session", columns="column", values="f1_score"
+        )
+    except ValueError as e:
+        print(f"⚠️  Cannot create pivot table: {e}")
+        print("📊 Creating alternative visualization...")
 
-    # Optimal F1-Score comparison
-    if not all_optimal_df.empty:
-        pivot_optimal_f1 = all_optimal_df.pivot(
-            index="session", columns="column", values="optimal_f1"
+        # Alternative: grouped bar chart
+        plt.subplot(2, 1, 1)
+        for column in all_results_df["column"].unique():
+            column_data = all_results_df[all_results_df["column"] == column]
+            plt.plot(
+                column_data["session"],
+                column_data["f1_score"],
+                marker="o",
+                label=column,
+                linewidth=2,
+            )
+
+        plt.title("F1-Score by Session and Column (Standard)")
+        plt.ylabel("F1-Score")
+        plt.xlabel("Session")
+        plt.legend()
+        plt.xticks(rotation=45)
+        plt.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        plt.savefig(
+            os.path.join(cross_session_dir, "cross_session_comparison.png"),
+            dpi=300,
+            bbox_inches="tight",
+        )
+        plt.close()
+
+        # Create summary statistics
+        summary_stats = (
+            all_results_df.groupby("column")
+            .agg(
+                {
+                    "f1_score": ["mean", "std", "min", "max"],
+                    "precision": ["mean", "std"],
+                    "recall": ["mean", "std"],
+                }
+            )
+            .round(4)
         )
 
-        plt.subplot(2, 2, 2)
+        summary_stats.to_csv(
+            os.path.join(cross_session_dir, "column_performance_summary.csv")
+        )
+
+        print(f"✅ Cross-session analysis saved in {cross_session_dir}")
+
+        plt.subplot(2, 2, 1)
         sns.heatmap(
-            pivot_optimal_f1,
+            pivot_f1,
             annot=True,
             fmt=".3f",
-            cmap="Greens",
-            cbar_kws={"label": "Optimal F1-Score"},
+            cmap="Blues",
+            cbar_kws={"label": "F1-Score"},
         )
-        plt.title("F1-Score by Session and Column (Optimal)")
+        plt.title("F1-Score by Session and Column (Standard)")
         plt.ylabel("Session")
         plt.xlabel("Column")
 
-        # Improvement comparison
-        pivot_improvement = all_optimal_df.pivot(
-            index="session", columns="column", values="improvement"
+        # Optimal F1-Score comparison
+        if not all_optimal_df.empty:
+            try:
+                pivot_optimal_f1 = all_optimal_df.pivot(
+                    index="session", columns="column", values="optimal_f1"
+                )
+
+                plt.subplot(2, 2, 2)
+                sns.heatmap(
+                    pivot_optimal_f1,
+                    annot=True,
+                    fmt=".3f",
+                    cmap="Greens",
+                    cbar_kws={"label": "Optimal F1-Score"},
+                )
+                plt.title("F1-Score by Session and Column (Optimal)")
+                plt.ylabel("Session")
+                plt.xlabel("Column")
+
+                # Improvement comparison
+                pivot_improvement = all_optimal_df.pivot(
+                    index="session", columns="column", values="improvement"
+                )
+
+                plt.subplot(2, 2, 3)
+                sns.heatmap(
+                    pivot_improvement,
+                    annot=True,
+                    fmt=".3f",
+                    cmap="RdYlGn",
+                    center=0,
+                    cbar_kws={"label": "F1-Score Improvement"},
+                )
+                plt.title("F1-Score Improvement by Session and Column")
+                plt.ylabel("Session")
+                plt.xlabel("Column")
+
+            except ValueError as e:
+                print(f"⚠️  Cannot create optimal pivot tables: {e}")
+                # Create alternative plot for optimal results
+                plt.subplot(2, 2, 2)
+                for column in all_optimal_df["column"].unique():
+                    column_data = all_optimal_df[all_optimal_df["column"] == column]
+                    plt.plot(
+                        column_data["session"],
+                        column_data["optimal_f1"],
+                        marker="s",
+                        label=column,
+                        linewidth=2,
+                    )
+
+                plt.title("Optimal F1-Score by Session and Column")
+                plt.ylabel("Optimal F1-Score")
+                plt.xlabel("Session")
+                plt.legend()
+                plt.xticks(rotation=45)
+                plt.grid(True, alpha=0.3)
+
+        # Average performance by column
+        avg_by_column = (
+            all_results_df.groupby("column")["f1_score"]
+            .mean()
+            .sort_values(ascending=False)
         )
 
-        plt.subplot(2, 2, 3)
-        sns.heatmap(
-            pivot_improvement,
-            annot=True,
-            fmt=".3f",
-            cmap="RdYlGn",
-            center=0,
-            cbar_kws={"label": "F1-Score Improvement"},
-        )
-        plt.title("F1-Score Improvement by Session and Column")
-        plt.ylabel("Session")
+        plt.subplot(2, 2, 4)
+        avg_by_column.plot(kind="bar", color="skyblue")
+        plt.title("Average F1-Score by Column Across All Sessions")
+        plt.ylabel("Average F1-Score")
         plt.xlabel("Column")
+        plt.xticks(rotation=45)
 
-    # Average performance by column
-    avg_by_column = (
-        all_results_df.groupby("column")["f1_score"].mean().sort_values(ascending=False)
-    )
-
-    plt.subplot(2, 2, 4)
-    avg_by_column.plot(kind="bar", color="skyblue")
-    plt.title("Average F1-Score by Column Across All Sessions")
-    plt.ylabel("Average F1-Score")
-    plt.xlabel("Column")
-    plt.xticks(rotation=45)
-
-    plt.tight_layout()
-    plt.savefig(
-        os.path.join(cross_session_dir, "cross_session_comparison.png"),
-        dpi=300,
-        bbox_inches="tight",
-    )
-    plt.close()
-
-    # Create summary statistics
-    summary_stats = (
-        all_results_df.groupby("column")
-        .agg(
-            {
-                "f1_score": ["mean", "std", "min", "max"],
-                "precision": ["mean", "std"],
-                "recall": ["mean", "std"],
-            }
+        plt.tight_layout()
+        plt.savefig(
+            os.path.join(cross_session_dir, "cross_session_comparison.png"),
+            dpi=300,
+            bbox_inches="tight",
         )
-        .round(4)
-    )
+        plt.close()
 
-    summary_stats.to_csv(
-        os.path.join(cross_session_dir, "column_performance_summary.csv")
-    )
+        # Create summary statistics
+        summary_stats = (
+            all_results_df.groupby("column")
+            .agg(
+                {
+                    "f1_score": ["mean", "std", "min", "max"],
+                    "precision": ["mean", "std"],
+                    "recall": ["mean", "std"],
+                }
+            )
+            .round(4)
+        )
 
-    print(f"✅ Cross-session analysis saved in {cross_session_dir}")
+        summary_stats.to_csv(
+            os.path.join(cross_session_dir, "column_performance_summary.csv")
+        )
+
+        print(f"✅ Cross-session analysis saved in {cross_session_dir}")
 
 
 def main():
@@ -1423,20 +1521,20 @@ def main():
     args = parser.parse_args()
 
     # Load configuration with potential override
-    global config
+    global config_data
     if args.config:
         try:
-            from config_loader import load_config
+            from config.config_loader import WorkflowConfig
 
-            config = load_config(args.config)
+            config_data = WorkflowConfig(args.config)
         except ImportError:
             print(f"⚠️  Could not load custom config file: {args.config}")
             print("📝 Using default configuration")
 
     # Print configuration if requested
     if args.print_config:
-        if config:
-            config.print_config()
+        if config_data:
+            config_data.print_config()
         else:
             print("📋 DEFAULT CONFIGURATION:")
             print("=" * 50)
@@ -1449,14 +1547,16 @@ def main():
 
     # Get configuration values (command line overrides config file)
     analysis_mode = args.analysis_mode or (config.analysis_mode if config else "both")
-    target_sessions = args.sessions or (config.target_sessions if config else [])
+    target_sessions = args.sessions or (
+        config.target_sessions if config and hasattr(config, "target_sessions") else []
+    )
     columns = args.columns or (
-        config.columns
-        if config
-        else ["tag_Buzz", "tag_Insect", "tag_Bird", "buzz", "biophony"]
+        config.columns if config else ["tag_Buzz", "tag_Insect", "biophony"]
     )
     skip_processing = args.skip_processing or (
-        config.skip_processing if config else False
+        config.skip_processing
+        if config and hasattr(config, "skip_processing")
+        else False
     )
 
     print("🚀 COMPLETE AUTOMATED PROCESSING")
