@@ -276,7 +276,7 @@ def create_combined_annotations(annotation_dirs: list) -> str:
     return temp_dir
 
 
-def run_evaluation(merged_csv: str, annotations_dir: str):
+def run_evaluation(merged_csv: str, annotations_dir: str, columns: list = None):
     """Launch comprehensive evaluation with advanced analysis."""
     print("📊 Evaluation in progress...")
 
@@ -289,8 +289,11 @@ def run_evaluation(merged_csv: str, annotations_dir: str):
         sys.path.insert(0, scripts_dir)
         from evaluation.evaluate_detection import analyze_detection_performance
 
-        # Columns to evaluate
-        columns = ["tag_Buzz", "tag_Insect", "tag_Bird", "buzz", "biophony"]
+        # Columns to evaluate (use provided columns or default)
+        if columns is None:
+            columns = ["tag_Buzz", "tag_Insect", "tag_Bird", "buzz", "biophony"]
+
+        print(f"📈 Evaluating columns: {', '.join(columns)}")
 
         # Standard evaluation results
         results = []
@@ -1098,7 +1101,7 @@ def run_analysis_with_optimal_threshold(
 
 
 def run_individual_session_evaluation(
-    csv_file: str, annotation_dirs: list, session_name: str
+    csv_file: str, annotation_dirs: list, session_name: str, columns: list = None
 ):
     """Run evaluation for a single session."""
     print(f"\n📊 Evaluating individual session: {session_name}")
@@ -1136,8 +1139,11 @@ def run_individual_session_evaluation(
         sys.path.insert(0, scripts_dir)
         from evaluation.evaluate_detection import analyze_detection_performance
 
-        # Columns to evaluate
-        columns = ["tag_Buzz", "tag_Insect", "tag_Bird", "buzz", "biophony"]
+        # Columns to evaluate (use provided columns or default)
+        if columns is None:
+            columns = ["tag_Buzz", "tag_Insect", "tag_Bird", "buzz", "biophony"]
+
+        print(f"📈 Evaluating columns: {', '.join(columns)}")
 
         session_results = []
         session_optimal_results = []
@@ -1236,7 +1242,9 @@ def run_individual_session_evaluation(
         return None, None
 
 
-def run_combined_evaluation(merged_csv: str, annotation_dirs: list):
+def run_combined_evaluation(
+    merged_csv: str, annotation_dirs: list, columns: list = None
+):
     """Run evaluation on all combined data."""
     print(f"\n📊 Running combined evaluation on all sessions")
 
@@ -1244,7 +1252,7 @@ def run_combined_evaluation(merged_csv: str, annotation_dirs: list):
     combined_annotations = create_combined_annotations(annotation_dirs)
 
     try:
-        run_evaluation(merged_csv, combined_annotations)
+        run_evaluation(merged_csv, combined_annotations, columns)
         # Cleanup
         shutil.rmtree(combined_annotations)
         print(f"✅ Combined evaluation completed")
@@ -1673,7 +1681,7 @@ def main():
             session_name = os.path.basename(os.path.dirname(csv_file))
 
             session_results, session_optimal = run_individual_session_evaluation(
-                csv_file, annotation_dirs, session_name
+                csv_file, annotation_dirs, session_name, columns
             )
 
             if session_results:
@@ -1683,7 +1691,7 @@ def main():
 
     if analysis_mode in ["combined", "both"]:
         print("\n📊 Combined analysis...")
-        run_combined_evaluation(merged_csv, annotation_dirs)
+        run_combined_evaluation(merged_csv, annotation_dirs, columns)
 
     # Step 5: Cross-session comparison (if individual analysis was done)
     if analysis_mode in ["individual", "both"] and all_session_results:
