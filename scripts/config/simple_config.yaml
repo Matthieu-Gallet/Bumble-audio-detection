@@ -7,9 +7,9 @@
 
 paths:
   # Data directory containing all session folders
-  data_dir: "data2"
+  data_dir: "data_org"
   # Output directory for results
-  output_dir: "output_batch_30"
+  output_dir: "output_final_30"
   # Python executable path
   python_path: ".venv/bin/python"
   # Process script path
@@ -79,10 +79,10 @@ advanced_evaluation:
   
   # Duration for temporal analysis in seconds
   duration: 30
-  
+
   # Output directory for advanced evaluation results
-  output_dir: "output_batch_30/advanced_evaluation"
-  
+  output_dir: "output_final_30/advanced_evaluation"
+
   # Error analysis configuration
   error_analysis:
     # Classes to exclude from false positive/negative analysis
