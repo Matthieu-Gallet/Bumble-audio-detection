@@ -1,0 +1,79 @@
+# Simplified Workflow Configuration File
+# Configuration for the simplified batch processing script
+
+# =============================================================================
+# PATH CONFIGURATION  
+# =============================================================================
+
+paths:
+  # Data directory containing all session folders
+  data_dir: "data"
+  # Output directory for results
+  output_dir: "output_batch"
+  # Python executable path
+  python_path: ".venv/bin/python"
+  # Process script path
+  process_script: "process.py"
+
+# =============================================================================
+# PROCESSING CONFIGURATION
+# =============================================================================
+
+processing:
+  # Segment length in seconds for audio processing
+  segment_length: 10
+  # Audio format to process
+  audio_format: "wav"
+  # Timeout for processing in seconds
+  timeout: 1800
+
+# =============================================================================
+# MODEL CONFIGURATION
+# =============================================================================
+
+model:
+  # Model type for audio detection
+  # Options: "mobilenetv2", "resnet22", etc.
+  type: "mobilenetv2"
+
+# =============================================================================
+# ANALYSIS CONFIGURATION
+# =============================================================================
+
+analysis:
+  # Mode: "inference" for detection only, "evaluation" for detection + evaluation with ground truth
+  mode: "evaluation"
+  
+  # Ground truth configuration (only used in evaluation mode)
+  ground_truth:
+    # Directory containing annotation files (.txt)
+    annotations_dir: "data"
+    # Pattern for finding annotation directories (e.g., "*_annotées")
+    annotation_pattern: "*_annotées"
+  
+  # Evaluation configuration (only used in evaluation mode)
+  evaluation:
+    # Create results subdirectory for evaluation outputs
+    results_subdir: "results"
+    # Columns to evaluate for detection performance
+    columns: ["Group_buzz"]
+    # Default threshold for evaluation
+    default_threshold: 0.2
+
+# =============================================================================
+# ADVANCED EVALUATION CONFIGURATION
+# =============================================================================
+
+# Advanced evaluation tasks (only used in evaluation mode)
+advanced_evaluation:
+  # Enable/disable advanced evaluation tasks
+  enabled: true
+  
+  # Optimize threshold using ROC curve analysis
+  optimize_threshold: true
+  
+  # Duration for temporal analysis in seconds
+  duration: 10
+  
+  # Output directory for advanced evaluation results
+  output_dir: "output_batch/advanced_evaluation"

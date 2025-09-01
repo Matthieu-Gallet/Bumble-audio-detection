@@ -146,6 +146,8 @@ test.csv
 
 *.flac
 data/*
+data*/*
 output_batch/*
 data2/*
 
+data_org/20240612_session_02_Tent/SM06_T_annotées/SMA02967-D06_20240612_135014.txt

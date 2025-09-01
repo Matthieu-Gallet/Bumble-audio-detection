@@ -1,16 +1,43 @@
-Wind,Rain,River,Wave,Thunder,Bird,Amphibian,Insect,Mammal,Reptile,Walking,Cycling,Beep,Car,Car honk,Motorbike,Plane,Helicoptere,Boat,Others_motors,Shoot,Bell,Talking,Music,Dog bark,Kitchen sounds,Rolling shutter,Rooster,Buzz
-Wind,Rain,Stream,Ocean,Thunderstorm,"Bird vocalization, bird call, bird song",Frog,Insect,"Rodents, rats, mice",Snake,Run,Bicycle,Reversing beeps,Car passing by,"Vehicle horn, car horn, honking",Motorcycle,Aircraft engine,Helicopter,"Motorboat, speedboat","Traffic noise, roadway noise","Gunshot, gunfire",Chime,Speech,Music,Dog,Door,"Power windows, electric windows","Chicken, rooster",Buzz
-,,Waterfall,,,"Pigeon, dove",,,"Canidae, dogs, wolves",,"Walk, footsteps",Bicycle bell,,Tire squeal,,,"Fixed-wing aircraft, airplane",,Ship,,,Jingle bell,"Hubbub, speech noise, speech babble",,Bark,Cupboard open or close,,,"Bee, wasp, etc."
-,,,,,Crow,,,,,,,,Motor vehicle (road),,,,,"Sailboat, sailing ship",,,Cowbell,"Male speech, man speaking",,Whimper (dog),Drawer open or close,,,
-,,,,,Owl,,,,,,,,Car,,,,,,,,Church bell,"Female speech, woman speaking",,"Canidae, dogs, wolves","Dishes, pots, and pans",,,
-,,,,,"Gull, seagull",,,,,,,,Bus,,,,,,,,Change ringing (campanology),"Child speech, kid speaking",,,"Cutlery, silverware",,,
-,,,,,,,,,,,,,Vehicle,,,,,,,,,Conversation,,,Chopping (food),,,
-,,,,,,,,,,,,,,,,,,,,,,"Narration, monologue",,,Sink (filling or washing),,,
-,,,,,,,,,,,,,,,,,,,,,,Babbling,,,"Water tap, faucet",,,
-,,,,,,,,,,,,,,,,,,,,,,Children shouting,,,Kettle whistle,,,
-,,,,,,,,,,,,,,,,,,,,,,Screaming,,,Microwave oven,,,
-,,,,,,,,,,,,,,,,,,,,,,Whispering,,,Blender,,,
-,,,,,,,,,,,,,,,,,,,,,,Laughter,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,Baby laughter,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,Giggle,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,"Baby cry, infant cry",,,,,,
+fly_housefly,bee_wasp,fly_bee_wasp,water,wind,motor_vehicle,aircraft,human_voice
+"Fly, housefly","Bee, wasp, etc.","Bee, wasp, etc.",Water,Wind,Motor vehicle (road),Aircraft,Human voice
+Buzz,Buzz,"Fly, housefly",Stream,Rustling leaves,Car,"Fixed-wing aircraft, airplane",Speech
+,,Buzz,Waterfall,Wind noise (microphone),"Vehicle horn, car horn, honking",Jet engine,"Male speech, man speaking"
+,,,Rain,Howl,Toot,"Propeller, airscrew","Female speech, woman speaking"
+,,,Raindrop,,Car alarm,Helicopter,"Child speech, kid speaking"
+,,,Rain on surface,,"Power windows, electric windows",Aircraft engine,Conversation
+,,,Stream,,Skidding,,"Narration, monologue"
+,,,"Trickle, dribble",,Tire squeal,,Babbling
+,,,"Gush, splash",,Car passing by,,Speech synthesizer
+,,,Fill (with liquid),,"Race car, auto racing",,Shout
+,,,Spray,,Truck,,Bellow
+,,,Pump (liquid),,Air brake,,Whoop
+,,,Stir,,"Air horn, truck horn",,Yell
+,,,Boiling,,Reversing beeps,,Battle cry
+,,,Pour,,"Ice cream truck, ice cream van",,Children shouting
+,,,Slosh,,Bus,,Screaming
+,,,Squish,,Emergency vehicle,,Whispering
+,,,,,Police car (siren),,Laughter
+,,,,,Ambulance (siren),,Baby laughter
+,,,,,"Fire engine, fire truck (siren)",,Giggle
+,,,,,Motorcycle,,Snicker
+,,,,,"Traffic noise, roadway noise",,Belly laugh
+,,,,,,,"Chuckle, chortle"
+,,,,,,,"Crying, sobbing"
+,,,,,,,"Baby cry, infant cry"
+,,,,,,,Whimper
+,,,,,,,"Wail, moan"
+,,,,,,,Sigh
+,,,,,,,Singing
+,,,,,,,Choir
+,,,,,,,Yodeling
+,,,,,,,Chant
+,,,,,,,Mantra
+,,,,,,,Male singing
+,,,,,,,Female singing
+,,,,,,,Child singing
+,,,,,,,Synthetic singing
+,,,,,,,Rapping
+,,,,,,,Humming
+,,,,,,,Groan
+,,,,,,,Grunt
+,,,,,,,Whistling
