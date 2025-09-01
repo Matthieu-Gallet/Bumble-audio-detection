@@ -406,6 +406,10 @@ def run_detection_for_directory(data_dir, config, annotation_dirs=None):
             str(config.segment_length),
             "--model",
             config.model_type,
+            "--multiprocessing",
+            str(getattr(config, "multiprocessing", 1)),
+            "--batch_size",
+            str(getattr(config, "batch_size", 32)),
         ]
 
         try:

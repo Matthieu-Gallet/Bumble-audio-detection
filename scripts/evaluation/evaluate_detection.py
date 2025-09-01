@@ -624,8 +624,8 @@ def create_error_analysis_by_class(
                 if not classes_above_threshold:
                     error_predictions.append(("none", 0.0))
                 else:
-                    # Take the first class that exceeds threshold (or could be max if multiple)
-                    # For consistency with the provided example, take the first one found
+                    # Sort classes above threshold by score and take the highest
+                    classes_above_threshold.sort(key=lambda x: x[1], reverse=True)
                     predicted_class, score = classes_above_threshold[0]
                     error_predictions.append((predicted_class, score))
 
@@ -640,30 +640,37 @@ def create_error_analysis_by_class(
             fp_class_counts = pd.Series(fp_classes).value_counts()
             fp_percentages = (fp_class_counts / fp_class_counts.sum() * 100).round(1)
 
-            # Plot false positives by class
+            # Limit to top 5 classes for visualization
+            top_5_fp = fp_percentages.head(5)
+
+            # Plot false positives by class (top 5)
             axes[0, 0].bar(
-                range(len(fp_percentages)),
-                fp_percentages.values,
+                range(len(top_5_fp)),
+                top_5_fp.values,
                 color="red",
                 alpha=0.7,
             )
             axes[0, 0].set_title(
-                f"Faux Positifs par Classe\n(Total: {false_positives.sum()})"
+                f"Faux Positifs par Classe (Top 5)\n(Total: {false_positives.sum()})"
             )
             axes[0, 0].set_ylabel("Pourcentage (%)")
-            axes[0, 0].set_xticks(range(len(fp_percentages)))
-            axes[0, 0].set_xticklabels(fp_percentages.index, rotation=45, ha="right")
+            axes[0, 0].set_xticks(range(len(top_5_fp)))
+            axes[0, 0].set_xticklabels(top_5_fp.index, rotation=45, ha="right")
             axes[0, 0].grid(True, alpha=0.3)
 
             # Add percentage labels on bars
-            for i, v in enumerate(fp_percentages.values):
+            for i, v in enumerate(top_5_fp.values):
                 axes[0, 0].text(i, v + 0.5, f"{v}%", ha="center", va="bottom")
 
-            # Print detailed false positives info
-            print(f"\nFAUX POSITIFS (classes détectées à tort):")
-            for class_name, percentage in fp_percentages.items():
+            # Print detailed false positives info (top 5)
+            print(f"\nFAUX POSITIFS (Top 5 classes détectées à tort):")
+            for class_name, percentage in top_5_fp.items():
                 count = fp_class_counts[class_name]
                 print(f"  {class_name}: {count} ({percentage}%)")
+
+            # Show total number of different classes detected
+            if len(fp_percentages) > 5:
+                print(f"  ... et {len(fp_percentages) - 5} autres classes")
         else:
             axes[0, 0].text(
                 0.5,
@@ -696,30 +703,37 @@ def create_error_analysis_by_class(
             fn_class_counts = pd.Series(fn_classes).value_counts()
             fn_percentages = (fn_class_counts / fn_class_counts.sum() * 100).round(1)
 
-            # Plot false negatives by class
+            # Limit to top 5 classes for visualization
+            top_5_fn = fn_percentages.head(5)
+
+            # Plot false negatives by class (top 5)
             axes[0, 1].bar(
-                range(len(fn_percentages)),
-                fn_percentages.values,
+                range(len(top_5_fn)),
+                top_5_fn.values,
                 color="orange",
                 alpha=0.7,
             )
             axes[0, 1].set_title(
-                f"Faux Négatifs par Classe\n(Total: {false_negatives.sum()})"
+                f"Faux Négatifs par Classe (Top 5)\n(Total: {false_negatives.sum()})"
             )
             axes[0, 1].set_ylabel("Pourcentage (%)")
-            axes[0, 1].set_xticks(range(len(fn_percentages)))
-            axes[0, 1].set_xticklabels(fn_percentages.index, rotation=45, ha="right")
+            axes[0, 1].set_xticks(range(len(top_5_fn)))
+            axes[0, 1].set_xticklabels(top_5_fn.index, rotation=45, ha="right")
             axes[0, 1].grid(True, alpha=0.3)
 
             # Add percentage labels on bars
-            for i, v in enumerate(fn_percentages.values):
+            for i, v in enumerate(top_5_fn.values):
                 axes[0, 1].text(i, v + 0.5, f"{v}%", ha="center", va="bottom")
 
-            # Print detailed false negatives info
-            print(f"\nFAUX NÉGATIFS (classes détectées à la place):")
-            for class_name, percentage in fn_percentages.items():
+            # Print detailed false negatives info (top 5)
+            print(f"\nFAUX NÉGATIFS (Top 5 classes détectées à la place):")
+            for class_name, percentage in top_5_fn.items():
                 count = fn_class_counts[class_name]
                 print(f"  {class_name}: {count} ({percentage}%)")
+
+            # Show total number of different classes detected
+            if len(fn_percentages) > 5:
+                print(f"  ... et {len(fn_percentages) - 5} autres classes")
         else:
             axes[0, 1].text(
                 0.5,

@@ -9,7 +9,7 @@ paths:
   # Data directory containing all session folders
   data_dir: "data2"
   # Output directory for results
-  output_dir: "output_batch"
+  output_dir: "output_batch_30"
   # Python executable path
   python_path: ".venv/bin/python"
   # Process script path
@@ -21,12 +21,13 @@ paths:
 
 processing:
   # Segment length in seconds for audio processing
-  segment_length: 10
+  segment_length: 30
   # Audio format to process
   audio_format: "wav"
   # Timeout for processing in seconds
   timeout: 1800
-
+  multiprocessing: 8
+  batch_size: 128
 # =============================================================================
 # MODEL CONFIGURATION
 # =============================================================================
@@ -46,7 +47,7 @@ analysis:
   mode: "evaluation"
   
   # Evaluation scope: "local" (site-level only), "global" (global only), or "both" (site-level + global)
-  evaluation_scope: "both"
+  evaluation_scope: "global"
   
   # Ground truth configuration (only used in evaluation mode)
   ground_truth:
@@ -58,7 +59,7 @@ analysis:
   # Evaluation configuration (only used in evaluation mode)
   evaluation:
     # Create results subdirectory for evaluation outputs
-    results_subdir: "results"
+    results_subdir: "evaluation"
     # Columns to evaluate for detection performance
     columns: ["Group_buzz"]
     # Default threshold for evaluation
@@ -77,10 +78,10 @@ advanced_evaluation:
   optimize_threshold: true
   
   # Duration for temporal analysis in seconds
-  duration: 10
+  duration: 30
   
   # Output directory for advanced evaluation results
-  output_dir: "output_batch/advanced_evaluation"
+  output_dir: "output_batch_30/advanced_evaluation"
   
   # Error analysis configuration
   error_analysis:

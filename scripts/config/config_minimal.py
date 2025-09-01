@@ -24,6 +24,8 @@ class WorkflowConfig:
         self._segment_length = 5
         self._audio_format = "wav"
         self._timeout = 1800
+        self._multiprocessing = 8  # Default number of processes
+        self._batch_size = 64  # Default batch size
         self._analysis_mode = "inference"
         self._evaluation_scope = "both"  # "local", "global", or "both"
         self._columns = ["Group_buzz"]  # Évaluation uniquement pour Buzz
@@ -91,6 +93,12 @@ class WorkflowConfig:
                             "audio_format", self._audio_format
                         )
                         self._timeout = processing.get("timeout", self._timeout)
+                        self._multiprocessing = processing.get(
+                            "multiprocessing", self._multiprocessing
+                        )
+                        self._batch_size = processing.get(
+                            "batch_size", self._batch_size
+                        )
 
                     # Model configuration
                     if "model" in yaml_config:
@@ -258,6 +266,14 @@ class WorkflowConfig:
     @property
     def model_type(self) -> str:
         return self._model_type
+
+    @property
+    def multiprocessing(self) -> int:
+        return self._multiprocessing
+
+    @property
+    def batch_size(self) -> int:
+        return self._batch_size
 
     @property
     def evaluation_scope(self) -> str:
