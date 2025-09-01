@@ -25,6 +25,7 @@ class WorkflowConfig:
         self._audio_format = "wav"
         self._timeout = 1800
         self._analysis_mode = "inference"
+        self._evaluation_scope = "both"  # "local", "global", or "both"
         self._columns = ["Group_buzz"]  # Évaluation uniquement pour Buzz
         self._default_threshold = (
             0.001  # Seuil très bas pour détecter les faibles probabilités
@@ -41,6 +42,7 @@ class WorkflowConfig:
         self._optimize_threshold = True
         self._evaluation_duration = 10.0
         self._evaluation_output_dir = "evaluation_advanced"
+        self._excluded_classes = {}  # Classes to exclude from error analysis
 
         # Load YAML config if provided and exists
         self._load_yaml_config()
@@ -98,6 +100,9 @@ class WorkflowConfig:
                     if "analysis" in yaml_config:
                         analysis = yaml_config["analysis"]
                         self._analysis_mode = analysis.get("mode", self._analysis_mode)
+                        self._evaluation_scope = analysis.get(
+                            "evaluation_scope", self._evaluation_scope
+                        )
 
                         if "evaluation" in analysis:
                             eval_config = analysis["evaluation"]
@@ -121,6 +126,13 @@ class WorkflowConfig:
                         self._evaluation_output_dir = adv_eval.get(
                             "output_dir", self._evaluation_output_dir
                         )
+
+                        # Error analysis configuration
+                        if "error_analysis" in adv_eval:
+                            error_config = adv_eval["error_analysis"]
+                            self._excluded_classes = error_config.get(
+                                "excluded_classes", self._excluded_classes
+                            )
 
                     # Backwards compatibility for flat structure
                     else:
@@ -248,6 +260,16 @@ class WorkflowConfig:
         return self._model_type
 
     @property
+    def evaluation_scope(self) -> str:
+        """Return evaluation scope: 'local', 'global', or 'both'."""
+        return self._evaluation_scope
+
+    @property
+    def excluded_classes(self) -> Dict[str, List[str]]:
+        """Return classes to exclude from error analysis."""
+        return self._excluded_classes
+
+    @property
     def evaluation_enabled(self) -> bool:
         return self._evaluation_enabled
 
@@ -267,6 +289,7 @@ class WorkflowConfig:
             "optimize_threshold": self._optimize_threshold,
             "duration": self._evaluation_duration,
             "output_dir": self._evaluation_output_dir,
+            "excluded_classes": self._excluded_classes,
         }
 
     @property

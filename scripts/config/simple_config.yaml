@@ -35,6 +35,7 @@ model:
   # Model type for audio detection
   # Options: "mobilenetv2", "resnet22", etc.
   type: "mobilenetv2"
+  # type: "resnet22"
 
 # =============================================================================
 # ANALYSIS CONFIGURATION
@@ -43,6 +44,9 @@ model:
 analysis:
   # Mode: "inference" for detection only, "evaluation" for detection + evaluation with ground truth
   mode: "evaluation"
+  
+  # Evaluation scope: "local" (site-level only), "global" (global only), or "both" (site-level + global)
+  evaluation_scope: "both"
   
   # Ground truth configuration (only used in evaluation mode)
   ground_truth:
@@ -67,7 +71,7 @@ analysis:
 # Advanced evaluation tasks (only used in evaluation mode)
 advanced_evaluation:
   # Enable/disable advanced evaluation tasks
-  enabled: false
+  enabled: true
   
   # Optimize threshold using ROC curve analysis
   optimize_threshold: true
@@ -77,3 +81,14 @@ advanced_evaluation:
   
   # Output directory for advanced evaluation results
   output_dir: "output_batch/advanced_evaluation"
+  
+  # Error analysis configuration
+  error_analysis:
+    # Classes to exclude from false positive/negative analysis
+    # These are sub-elements that should not be considered as errors
+    # when the main class is detected (e.g., tag_bee_wasp is part of Group_buzz)
+    excluded_classes:
+      Group_buzz:
+        - "tag_bee_wasp"
+        - "tag_fly_housefly"
+        - "Group_buzz"

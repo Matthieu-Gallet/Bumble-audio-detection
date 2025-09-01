@@ -502,7 +502,13 @@ def analyze_detection_performance(
 
 
 def create_error_analysis_by_class(
-    csv_path, segments_df, ground_truth, final_predictions, output_dir, column_name
+    csv_path,
+    segments_df,
+    ground_truth,
+    final_predictions,
+    output_dir,
+    column_name,
+    excluded_classes=None,
 ):
     """
     Create visualization of false positives and false negatives by class.
@@ -514,6 +520,7 @@ def create_error_analysis_by_class(
         final_predictions: Array of final binary predictions (0/1)
         output_dir: Directory to save plots
         column_name: Name of the column being evaluated
+        excluded_classes: Dict with classes to exclude from analysis for each target class
     """
     # Load the original CSV to get all prediction columns
     try:
@@ -541,6 +548,14 @@ def create_error_analysis_by_class(
     available_columns = [
         col for col in prediction_columns if col in original_df.columns
     ]
+
+    # Remove excluded classes for this target column if specified
+    if excluded_classes and column_name in excluded_classes:
+        excluded_for_column = excluded_classes[column_name]
+        available_columns = [
+            col for col in available_columns if col not in excluded_for_column
+        ]
+        print(f"Excluded classes for {column_name}: {excluded_for_column}")
 
     if not available_columns:
         print("No prediction columns found for error analysis")
@@ -593,9 +608,26 @@ def create_error_analysis_by_class(
             if not matching_rows.empty:
                 # Use the first matching row
                 row = matching_rows.iloc[0]
-                max_col = row[available_columns].idxmax()
-                max_score = row[max_col]
-                error_predictions.append((max_col, max_score))
+
+                # Get the threshold for this row
+                used_threshold = row.get(
+                    "used_threshold", 0.5
+                )  # Default to 0.5 if column doesn't exist
+
+                # Find classes that exceed the threshold
+                classes_above_threshold = []
+                for col in available_columns:
+                    if row[col] > used_threshold:
+                        classes_above_threshold.append((col, row[col]))
+
+                # If no class exceeds threshold, assign 'none'
+                if not classes_above_threshold:
+                    error_predictions.append(("none", 0.0))
+                else:
+                    # Take the first class that exceeds threshold (or could be max if multiple)
+                    # For consistency with the provided example, take the first one found
+                    predicted_class, score = classes_above_threshold[0]
+                    error_predictions.append((predicted_class, score))
 
         return error_predictions
 
@@ -1048,6 +1080,7 @@ def run_advanced_evaluation(
     output_dir,
     duration=10.0,
     optimize_threshold=True,
+    excluded_classes=None,
 ):
     """
     Run complete advanced evaluation with threshold optimization and all plots.
@@ -1059,6 +1092,7 @@ def run_advanced_evaluation(
         output_dir: Output directory for results
         duration: Segment duration in seconds
         optimize_threshold: Whether to optimize threshold by F1-score
+        excluded_classes: Dict with classes to exclude from error analysis
 
     Returns:
         dict: Complete evaluation results
@@ -1152,6 +1186,7 @@ def run_advanced_evaluation(
             final_predictions,
             output_dir,
             detection_column,
+            excluded_classes,
         )
 
         # Save detailed results
