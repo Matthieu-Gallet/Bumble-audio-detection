@@ -448,14 +448,16 @@ def analyze_detection_performance(
     # Créer les segments alignés
     segments_df = create_time_segments(ground_truth, predictions)
 
-    print(f"⏱️ Segments créés: {len(segments_df)}")
+    print(f"Segments créés: {len(segments_df)}")
+
+    # Calculate metrics for each column
     print(f"Positive segments (ground truth): {segments_df['ground_truth'].sum()}")
     print(f"Detected segments: {segments_df['prediction'].sum()}")
 
     # Calculer les métriques
     metrics = calculate_metrics(segments_df["ground_truth"], segments_df["prediction"])
 
-    print("\n📈 MÉTRIQUES DE PERFORMANCE:")
+    print("\nMÉTRIQUES DE PERFORMANCE:")
     print("=" * 50)
     print(f"Précision:        {metrics['precision']:.3f}")
     print(f"Rappel:           {metrics['recall']:.3f}")
@@ -485,7 +487,7 @@ def analyze_detection_performance(
     if output_dir:
         results_path = os.path.join(output_dir, "detailed_results.csv")
         segments_df.to_csv(results_path, index=False)
-        print(f"\n💾 Résultats détaillés sauvegardés: {results_path}")
+        print(f"\nRésultats détaillés sauvegardés: {results_path}")
 
         # Sauvegarder les métriques
         metrics_path = os.path.join(output_dir, "metrics.txt")
@@ -517,7 +519,7 @@ def create_error_analysis_by_class(
     try:
         original_df = pd.read_csv(csv_path)
     except Exception as e:
-        print(f"⚠️ Could not load original CSV for error analysis: {e}")
+        print(f"Could not load original CSV for error analysis: {e}")
         return
 
     # Define all prediction columns available
@@ -541,27 +543,27 @@ def create_error_analysis_by_class(
     ]
 
     if not available_columns:
-        print("⚠️ No prediction columns found for error analysis")
+        print("No prediction columns found for error analysis")
         return
 
     # Create a mapping from segments to original data
     # This is tricky because segments might not align perfectly with original rows
     # For now, we'll use the filename and start time to match
     if "filename" not in segments_df.columns or "start_time" not in segments_df.columns:
-        print("⚠️ Missing filename or start_time columns for error analysis mapping")
+        print("Missing filename or start_time columns for error analysis mapping")
         return
 
     # Identify false positives and false negatives
     false_positives = (ground_truth == 0) & (final_predictions == 1)
     false_negatives = (ground_truth == 1) & (final_predictions == 0)
 
-    print(f"\n🔍 ANALYSE DES ERREURS PAR CLASSE")
+    print(f"\nANALYSE DES ERREURS PAR CLASSE")
     print("-" * 50)
     print(f"Faux positifs: {false_positives.sum()}")
     print(f"Faux négatifs: {false_negatives.sum()}")
 
     if false_positives.sum() == 0 and false_negatives.sum() == 0:
-        print("✅ Aucune erreur détectée !")
+        print("Aucune erreur détectée !")
         return
 
     # Create figure for error analysis
@@ -626,7 +628,7 @@ def create_error_analysis_by_class(
                 axes[0, 0].text(i, v + 0.5, f"{v}%", ha="center", va="bottom")
 
             # Print detailed false positives info
-            print(f"\n🔴 FAUX POSITIFS (classes détectées à tort):")
+            print(f"\nFAUX POSITIFS (classes détectées à tort):")
             for class_name, percentage in fp_percentages.items():
                 count = fp_class_counts[class_name]
                 print(f"  {class_name}: {count} ({percentage}%)")
@@ -682,7 +684,7 @@ def create_error_analysis_by_class(
                 axes[0, 1].text(i, v + 0.5, f"{v}%", ha="center", va="bottom")
 
             # Print detailed false negatives info
-            print(f"\n🟡 FAUX NÉGATIFS (classes détectées à la place):")
+            print(f"\nFAUX NÉGATIFS (classes détectées à la place):")
             for class_name, percentage in fn_percentages.items():
                 count = fn_class_counts[class_name]
                 print(f"  {class_name}: {count} ({percentage}%)")
@@ -834,7 +836,7 @@ def create_error_analysis_by_class(
     plt.savefig(error_plot_path, dpi=300, bbox_inches="tight")
     plt.close()
 
-    print(f"📊 Analyse des erreurs sauvegardée: {error_plot_path}")
+    print(f"Analyse des erreurs sauvegardée: {error_plot_path}")
 
 
 def create_advanced_plots(ground_truth, predictions, scores, output_dir, column_name):
@@ -977,7 +979,7 @@ def create_advanced_plots(ground_truth, predictions, scores, output_dir, column_
     plt.savefig(plot_path, dpi=300, bbox_inches="tight")
     plt.close()
 
-    print(f"📊 Advanced plots saved: {plot_path}")
+    print(f"Advanced plots saved: {plot_path}")
 
     return {
         "optimal_threshold": optimal_threshold,
@@ -1061,7 +1063,7 @@ def run_advanced_evaluation(
     Returns:
         dict: Complete evaluation results
     """
-    print("\n🚀 ÉVALUATION AVANCÉE")
+    print("\nÉVALUATION AVANCÉE")
     print("=" * 60)
 
     # Use existing function to get segments and initial metrics
@@ -1070,7 +1072,7 @@ def run_advanced_evaluation(
         csv_path, annotations_dir, detection_column, 0.001, None, duration
     )
 
-    print(f"⏱️ Segments created: {len(segments_df)}")
+    print(f"Segments created: {len(segments_df)}")
 
     # Extract arrays for advanced analysis
     ground_truth = segments_df["ground_truth"].values
@@ -1080,7 +1082,7 @@ def run_advanced_evaluation(
     initial_threshold = 0.001
     initial_predictions = segments_df["prediction"].values
 
-    print(f"\n📊 ANALYSE INITIALE (seuil = {initial_threshold})")
+    print(f"\nANALYSE INITIALE (seuil = {initial_threshold})")
     print("-" * 50)
     print(f"Positive segments (ground truth): {ground_truth.sum()}")
     print(f"Detected segments: {initial_predictions.sum()}")
@@ -1098,7 +1100,7 @@ def run_advanced_evaluation(
     if (
         optimize_threshold and len(np.unique(scores)) > 1
     ):  # Only if we have varied scores
-        print("\n🎯 OPTIMISATION DU SEUIL")
+        print("\nOPTIMISATION DU SEUIL")
         print("-" * 50)
 
         optimization_results = optimize_threshold_by_f1(ground_truth, scores)
@@ -1114,7 +1116,7 @@ def run_advanced_evaluation(
             ground_truth, scores, optimal_predictions
         )
 
-        print(f"\n📈 MÉTRIQUES AVEC SEUIL OPTIMAL")
+        print(f"\nMÉTRIQUES AVEC SEUIL OPTIMAL")
         print("-" * 50)
         for key, value in optimal_metrics.items():
             if isinstance(value, (int, float)):
@@ -1126,7 +1128,7 @@ def run_advanced_evaluation(
         final_threshold = optimal_threshold
     else:
         print(
-            "\n⚠️ Optimisation du seuil ignorée (scores identiques ou option désactivée)"
+            "\nOptimisation du seuil ignorée (scores identiques ou option désactivée)"
         )
         final_predictions = initial_predictions
         final_metrics = advanced_initial_metrics
@@ -1160,7 +1162,7 @@ def run_advanced_evaluation(
             output_dir, f"advanced_results_{detection_column}.csv"
         )
         segments_df.to_csv(results_path, index=False)
-        print(f"\n💾 Résultats détaillés: {results_path}")
+        print(f"\nRésultats détaillés: {results_path}")
 
         # Save metrics summary
         metrics_path = os.path.join(
@@ -1209,7 +1211,7 @@ def run_advanced_evaluation(
 
         with open(metrics_path, "w") as f:
             json.dump(json_metrics, f, indent=2)
-        print(f"📊 Métriques sauvegardées: {metrics_path}")
+        print(f"Métriques sauvegardées: {metrics_path}")
 
     return {
         "segments_df": segments_df,
@@ -1247,7 +1249,7 @@ if __name__ == "__main__":
         print(f"   Threshold: {THRESHOLD}")
 
     except Exception as e:
-        print(f"⚠️  Could not load config: {e}")
+        print(f"Could not load config: {e}")
         print("Using default configuration...")
 
         # Fallback configuration

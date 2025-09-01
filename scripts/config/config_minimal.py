@@ -187,7 +187,7 @@ class WorkflowConfig:
         try:
             with open(self.config_file, "w") as f:
                 yaml.dump(default_config, f, default_flow_style=False, indent=2)
-            print(f"✅ Created default config file: {self.config_file}")
+            print(f"Created default config file: {self.config_file}")
         except Exception as e:
             print(f"Warning: Could not create config file {self.config_file}: {e}")
 
