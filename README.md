@@ -258,3 +258,11 @@ output_batch/
 ├── classical_results/                   # Résultats globaux classiques
 └── global_advanced_evaluation/          # Résultats globaux avancés
 ```
+
+## Analyses
+Le script
+
+## TODO
+
+enregistreurs : Loriaz 1600 (voix) / Loriaz 2100 (vent) / Peclerey 1400 (Helico) / Diosaz (riviere)
+- période : 1er avril → 20 juin. toute la journée (si pas trop long...)

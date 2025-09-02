@@ -47,7 +47,7 @@ analysis:
   mode: "evaluation"
   
   # Evaluation scope: "local" (site-level only), "global" (global only), or "both" (site-level + global)
-  evaluation_scope: "global"
+  evaluation_scope: "both"
   
   # Ground truth configuration (only used in evaluation mode)
   ground_truth:

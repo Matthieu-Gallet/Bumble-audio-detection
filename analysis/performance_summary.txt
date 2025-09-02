@@ -1,0 +1,25 @@
+RÉSUMÉ DE L'ANALYSE DE PERFORMANCE
+==================================================
+
+Modèle: MOBILENETV2
+
+Nombre de durées testées: 8
+Plage de durées: 10s - 45s
+
+MEILLEURE PERFORMANCE:
+  Durée optimale: 30.0s
+  F1-Score: 0.683 (68.3%)
+  Précision: 0.657
+  Rappel: 0.711
+  ROC-AUC: 0.887
+
+TABLEAU COMPLET:
+ Duration  F1-Score  F1-Score_%  Precision  Recall  ROC-AUC  Optimal_Threshold
+       10     0.676        67.6      0.666   0.686    0.874           0.242424
+       15     0.670        67.0      0.702   0.640    0.864           0.272727
+       20     0.676        67.6      0.666   0.686    0.874           0.242424
+       25     0.680        68.0      0.696   0.664    0.881           0.424242
+       30     0.683        68.3      0.657   0.711    0.887           0.353535
+       35     0.676        67.6      0.642   0.714    0.891           0.393939
+       40     0.660        66.0      0.604   0.728    0.887           0.353535
+       45     0.650        65.0      0.638   0.663    0.888           0.535354
