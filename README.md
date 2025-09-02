@@ -268,7 +268,7 @@ Le script analyze_output_final.py permet d'évaluer la variation du F1-score et 
 ### Analyse temporelle
 Le script test_duration.sh permet d'évaluer la performance sur un jeu de données en fonction de la taille de la fenêtre d'analyse. Il génère des rapports sur les temps de traitement et la précision des résultats.
 
-## TODO
 
-enregistreurs : Loriaz 1600 (voix) / Loriaz 2100 (vent) / Peclerey 1400 (Helico) / Diosaz (riviere)
-- période : 1er avril → 20 juin. toute la journée (si pas trop long...)
+## Selection des données
+
+Un script est proposé pour sélectionner et copier les données acoustiques en fonction de critères spécifiques (select_acoustic_data.py), en utilisant le serial number de l'enregistreur et un filtrage sur les dates et heures.
