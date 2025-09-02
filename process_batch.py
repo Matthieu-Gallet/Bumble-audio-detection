@@ -13,6 +13,9 @@ import glob
 import argparse
 from pathlib import Path
 import shutil
+import json
+import signal
+from datetime import datetime
 
 # Add config to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +27,130 @@ try:
 except ImportError:
     print("Error: Cannot load configuration system")
     sys.exit(1)
+
+
+def get_evaluation_functions():
+    """Dynamically import evaluation functions."""
+    try:
+        eval_dir = os.path.join(current_dir, "scripts", "evaluation")
+        sys.path.insert(0, eval_dir)  # Insert at beginning of path
+        import importlib
+
+        evaluate_detection = importlib.import_module("evaluate_detection")
+        return (
+            evaluate_detection.analyze_detection_performance,
+            evaluate_detection.run_advanced_evaluation,
+        )
+    except ImportError as e:
+        print(f"Warning: Could not import evaluation functions: {e}")
+        return None, None
+
+
+# Global variables for checkpoint management
+checkpoint_file = None
+processed_sessions = set()
+total_sessions = 0
+current_session_idx = 0
+
+
+def save_checkpoint(output_base, processed_sessions, current_idx, total_sessions):
+    """Save processing state to checkpoint file."""
+    checkpoint_data = {
+        "timestamp": datetime.now().isoformat(),
+        "processed_sessions": list(processed_sessions),
+        "current_session_idx": current_idx,
+        "total_sessions": total_sessions,
+        "completion_percentage": (
+            (len(processed_sessions) / total_sessions * 100)
+            if total_sessions > 0
+            else 0
+        ),
+    }
+
+    checkpoint_path = os.path.join(output_base, "processing_checkpoint.json")
+    try:
+        with open(checkpoint_path, "w") as f:
+            json.dump(checkpoint_data, f, indent=2)
+        print(
+            f"✓ Checkpoint saved: {len(processed_sessions)}/{total_sessions} sessions processed"
+        )
+    except Exception as e:
+        print(f"⚠️ Warning: Could not save checkpoint: {e}")
+
+
+def load_checkpoint(output_base):
+    """Load processing state from checkpoint file."""
+    checkpoint_path = os.path.join(output_base, "processing_checkpoint.json")
+
+    if not os.path.exists(checkpoint_path):
+        return {
+            "processed_sessions": [],
+            "current_session_idx": 0,
+            "total_sessions": 0,
+            "completion_percentage": 0,
+            "timestamp": None,
+        }
+
+    try:
+        with open(checkpoint_path, "r") as f:
+            checkpoint_data = json.load(f)
+
+        processed_sessions = set(checkpoint_data.get("processed_sessions", []))
+        current_idx = checkpoint_data.get("current_session_idx", 0)
+        total_sessions = checkpoint_data.get("total_sessions", 0)
+
+        completion = checkpoint_data.get("completion_percentage", 0)
+        timestamp = checkpoint_data.get("timestamp", "unknown")
+
+        print(
+            f"✓ Checkpoint loaded: {len(processed_sessions)}/{total_sessions} sessions already processed"
+        )
+        print(f"  Last saved: {timestamp} ({completion:.1f}% complete)")
+
+        return {
+            "processed_sessions": list(processed_sessions),
+            "current_session_idx": current_idx,
+            "total_sessions": total_sessions,
+            "completion_percentage": completion,
+            "timestamp": timestamp,
+        }
+
+    except Exception as e:
+        print(f"⚠️ Warning: Could not load checkpoint: {e}")
+        return {
+            "processed_sessions": [],
+            "current_session_idx": 0,
+            "total_sessions": 0,
+            "completion_percentage": 0,
+            "timestamp": None,
+        }
+
+
+def signal_handler(signum, frame):
+    """Handle interruption signals to save checkpoint before exit."""
+    print(f"\n⚠️ Interruption received (signal {signum})")
+    if checkpoint_file and processed_sessions:
+        save_checkpoint(
+            checkpoint_file, processed_sessions, current_session_idx, total_sessions
+        )
+    print("Exiting...")
+    sys.exit(1)
+
+
+def print_progress_bar(current, total, prefix="Progress", suffix="", length=50):
+    """Print a progress bar to the console."""
+    if total == 0:
+        return
+
+    percent = (current / total) * 100
+    filled_length = int(length * current // total)
+    bar = "█" * filled_length + "░" * (length - filled_length)
+
+    sys.stdout.write(f"\r{prefix}: [{bar}] {percent:.1f}% {suffix}")
+    sys.stdout.flush()
+
+    if current == total:
+        print()  # New line when complete
 
 
 def find_data_directories(base_data_path):
@@ -134,10 +261,10 @@ def run_site_level_evaluation(result_file, session_name, annotation_dirs, config
         # Add evaluation scripts to path
         eval_dir = os.path.join(current_dir, "scripts", "evaluation")
         sys.path.append(eval_dir)
-        from evaluate_detection import (
-            analyze_detection_performance,
-            run_advanced_evaluation as run_adv_eval,
-        )
+        analyze_detection_performance, run_adv_eval = get_evaluation_functions()
+        if analyze_detection_performance is None:
+            print("Warning: Evaluation functions not available")
+            return
 
         # Run classical evaluation for each column
         print(f"  Running classical evaluation...")
@@ -245,7 +372,10 @@ def run_global_evaluation(merged_csv, annotation_dirs, config):
         # Add evaluation scripts to path
         eval_dir = os.path.join(current_dir, "scripts", "evaluation")
         sys.path.append(eval_dir)
-        from evaluate_detection import analyze_detection_performance
+        analyze_detection_performance, _ = get_evaluation_functions()
+        if analyze_detection_performance is None:
+            print("Warning: Evaluation functions not available")
+            return
 
         # Run evaluation for each column
         for column in config.columns:
@@ -291,7 +421,10 @@ def run_global_advanced_evaluation(merged_csv, annotation_dirs, config):
         # Add evaluation scripts to path
         eval_dir = os.path.join(current_dir, "scripts", "evaluation")
         sys.path.append(eval_dir)
-        from evaluate_detection import run_advanced_evaluation as run_adv_eval
+        _, run_adv_eval = get_evaluation_functions()
+        if run_adv_eval is None:
+            print("Warning: Advanced evaluation functions not available")
+            return
 
         # Set up global advanced evaluation output directory (renamed)
         if hasattr(config, "advanced_evaluation") and config.advanced_evaluation.get(
@@ -435,6 +568,7 @@ def run_detection_for_directory(data_dir, config, annotation_dirs=None):
     result_file = os.path.join(output_dir, f"indices_{session_name}.csv")
     if os.path.exists(result_file):
         print(f"Already processed: {session_name}")
+        return True, result_file  # Return success status
     else:
         print(f"Processing: {session_name} ({data_dir['audio_count']} audio files)")
 
@@ -461,36 +595,52 @@ def run_detection_for_directory(data_dir, config, annotation_dirs=None):
         ]
 
         try:
+            # Run subprocess with real-time output to show progress bars
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=config.timeout
+                cmd,
+                timeout=config.timeout,
+                text=True,
+                # Don't capture output to allow progress bars to show
+                # but we'll check return code for success/failure
             )
 
             if result.returncode == 0:
                 if os.path.exists(result_file):
-                    print(f"Success: {session_name}")
+                    print(f"✅ Success: {session_name}")
+                    # Run site-level evaluation if we have the result file and annotations
+                    if (
+                        os.path.exists(result_file)
+                        and annotation_dirs
+                        and config.is_evaluation_mode
+                    ):
+                        run_site_level_evaluation(
+                            result_file, session_name, annotation_dirs, config
+                        )
+
+                    # Clean up audio files if enabled in config and processing was successful
+                    if os.path.exists(result_file) and getattr(
+                        config, "cleanup_audio_files", False
+                    ):
+                        cleanup_audio_files(data_path, session_name)
+
+                    return True, result_file if os.path.exists(result_file) else None
+
+                    # return True, result_file  # Return success status
                 else:
-                    print(f"Error: Result file not found for {session_name}")
-                    return None
+                    print(f"❌ Error: Result file not found for {session_name}")
+                    return False, None
             else:
-                print(f"Error processing {session_name}: {result.stderr}")
-                return None
+                print(
+                    f"❌ Error processing {session_name}: Process failed with return code {result.returncode}"
+                )
+                return False, None
 
         except subprocess.TimeoutExpired:
             print(f"Timeout processing {session_name}")
-            return None
+            return False, None
         except Exception as e:
-            print(f"Exception processing {session_name}: {e}")
-            return None
-
-    # Run site-level evaluation if we have the result file and annotations
-    if os.path.exists(result_file) and annotation_dirs and config.is_evaluation_mode:
-        run_site_level_evaluation(result_file, session_name, annotation_dirs, config)
-
-    # Clean up audio files if enabled in config and processing was successful
-    if os.path.exists(result_file) and getattr(config, "cleanup_audio_files", False):
-        cleanup_audio_files(data_path, session_name)
-
-    return result_file if os.path.exists(result_file) else None
+            print(f"❌ Exception processing {session_name}: {e}")
+            return False, None
 
 
 def merge_results(csv_files, output_path):
@@ -567,7 +717,10 @@ def run_evaluation(merged_csv, annotation_dirs, config):
         # Add evaluation scripts to path
         eval_dir = os.path.join(current_dir, "scripts", "evaluation")
         sys.path.append(eval_dir)
-        from evaluate_detection import analyze_detection_performance
+        analyze_detection_performance, _ = get_evaluation_functions()
+        if analyze_detection_performance is None:
+            print("Warning: Evaluation functions not available")
+            return
 
         # Run evaluation for each column
         for column in config.columns:
@@ -643,6 +796,22 @@ def main():
         config.set_mode(args.mode)
         print(f"Mode overridden to: {args.mode}")
 
+    # Set up signal handler for graceful interruption
+    def signal_handler(signum, frame):
+        print("\n⚠️  Received interrupt signal. Saving checkpoint...")
+        if "processed_sessions" in locals() and "config" in locals():
+            save_checkpoint(
+                config.output_base,
+                processed_sessions,
+                current_session_idx,
+                total_sessions,
+            )
+        print("Checkpoint saved. Exiting...")
+        sys.exit(1)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     # Create output directory
     os.makedirs(config.output_base, exist_ok=True)
 
@@ -667,15 +836,71 @@ def main():
                 print("No matching sessions found")
                 return 1
 
-        print(f"Found {len(data_dirs)} directories to process")
+        # Load checkpoint if exists
+        checkpoint_path = os.path.join(config.output_base, "processing_checkpoint.json")
+        if os.path.exists(checkpoint_path):
+            checkpoint_data = load_checkpoint(config.output_base)
+            processed_sessions = set(checkpoint_data.get("processed_sessions", []))
+            current_session_idx = checkpoint_data.get("current_session_idx", 0)
+            total_sessions_from_checkpoint = checkpoint_data.get("total_sessions", 0)
+            print(
+                f"Resuming from checkpoint: {len(processed_sessions)}/{total_sessions_from_checkpoint} sessions processed"
+            )
+        else:
+            processed_sessions = set()
+            current_session_idx = 0
+
+        # Set global checkpoint path for signal handler
+        checkpoint_file = config.output_base
 
         # Process each directory with site-level evaluation
         result_files = []
-        for data_dir in data_dirs:
-            result_file = run_detection_for_directory(data_dir, config, annotation_dirs)
-            if result_file:
+        total_sessions = len(data_dirs)
+
+        for i, data_dir in enumerate(data_dirs):
+            session_name = data_dir["name"]
+
+            # Skip if already processed
+            if session_name in processed_sessions:
+                print(f"⏭️  Skipping already processed: {session_name}")
+                result_file = os.path.join(
+                    config.output_base, session_name, f"indices_{session_name}.csv"
+                )
+                if os.path.exists(result_file):
+                    result_files.append(result_file)
+                continue
+
+            # Update progress
+            current_session_idx = i
+            print_progress_bar(
+                i, total_sessions, prefix="Processing:", suffix=f"{session_name}"
+            )
+
+            # Process the directory
+            success, result_file = run_detection_for_directory(
+                data_dir, config, annotation_dirs
+            )
+            if success and result_file:
                 result_files.append(result_file)
-                print(f"✓ Site processing completed: {data_dir['name']}")
+                processed_sessions.add(session_name)
+                print(f"✓ Site processing completed: {session_name}")
+
+                # Save checkpoint after successful processing
+                save_checkpoint(
+                    config.output_base, processed_sessions, i + 1, total_sessions
+                )
+            else:
+                print(f"✗ Failed to process: {session_name}")
+
+        # Final progress update
+        print_progress_bar(
+            total_sessions, total_sessions, prefix="Processing:", suffix="Complete"
+        )
+
+        # Clean up checkpoint file on successful completion
+        if os.path.exists(checkpoint_path):
+            os.remove(checkpoint_path)
+            print("Checkpoint file cleaned up")
 
         # Merge results
         if result_files:

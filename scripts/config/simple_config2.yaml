@@ -7,9 +7,9 @@
 
 paths:
   # Data directory containing all session folders
-  data_dir: "data"
+  data_dir: "/media/mgallet/BACK UP/select_data"
   # Output directory for results
-  output_dir: "output_final_30"
+  output_dir: "/media/mgallet/BACK UP/inference"
   # Python executable path
   python_path: ".venv/bin/python"
   # Process script path
@@ -27,7 +27,7 @@ processing:
   # Timeout for processing in seconds
   timeout: 1800
   multiprocessing: 8
-  batch_size: 16
+  batch_size: 32
   # Clean up intermediate audio files after processing each site
   cleanup_audio_files: true
 # =============================================================================
@@ -46,10 +46,10 @@ model:
 
 analysis:
   # Mode: "inference" for detection only, "evaluation" for detection + evaluation with ground truth
-  mode: "evaluation"
+  mode: "inference"
   
   # Evaluation scope: "local" (site-level only), "global" (global only), or "both" (site-level + global)
-  evaluation_scope: "both"
+  evaluation_scope: "global"
   
   # Ground truth configuration (only used in evaluation mode)
   ground_truth:
@@ -74,7 +74,7 @@ analysis:
 # Advanced evaluation tasks (only used in evaluation mode)
 advanced_evaluation:
   # Enable/disable advanced evaluation tasks
-  enabled: true
+  enabled: false
   
   # Optimize threshold using ROC curve analysis
   optimize_threshold: true

@@ -6,6 +6,65 @@ from utils import metadata
 from utils import dataloader
 from utils.tagging_validation import tagging_validate
 from models import PANNS_Model, inference
+import json
+import signal
+from datetime import datetime
+import sys
+
+
+def save_checkpoint(save_path, processed_files, current_batch_idx, total_batches):
+    """Save processing state to checkpoint file."""
+    checkpoint_data = {
+        "timestamp": datetime.now().isoformat(),
+        "processed_files": list(processed_files),
+        "current_batch_idx": current_batch_idx,
+        "total_batches": total_batches,
+        "completion_percentage": (
+            (current_batch_idx / total_batches * 100) if total_batches > 0 else 0
+        ),
+    }
+
+    checkpoint_path = os.path.join(save_path, "processing_checkpoint.json")
+    try:
+        with open(checkpoint_path, "w") as f:
+            json.dump(checkpoint_data, f, indent=2)
+    except Exception as e:
+        print(f"Warning: Could not save checkpoint: {e}")
+
+
+def load_checkpoint(save_path):
+    """Load processing state from checkpoint file."""
+    checkpoint_path = os.path.join(save_path, "processing_checkpoint.json")
+    if os.path.exists(checkpoint_path):
+        try:
+            with open(checkpoint_path, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not load checkpoint: {e}")
+    return {"processed_files": [], "current_batch_idx": 0, "total_batches": 0}
+
+
+def print_progress_bar(current, total, prefix="Progress", suffix="", length=50):
+    """Print a progress bar to the console."""
+    percent = (current / total * 100) if total > 0 else 0
+    filled_length = int(length * current // total) if total > 0 else 0
+    bar = "█" * filled_length + "░" * (length - filled_length)
+
+    sys.stdout.write(f"\r{prefix}: |{bar}| {percent:.1f}% {suffix}")
+    sys.stdout.flush()
+
+    if current == total:
+        print()  # New line when complete
+
+
+def get_processed_files_from_checkpoint(checkpoint_data):
+    """Extract processed files from checkpoint data."""
+    return set(checkpoint_data.get("processed_files", []))
+
+
+def is_file_processed(file_path, processed_files):
+    """Check if a file has already been processed based on its path."""
+    return file_path in processed_files
 
 
 def main():
@@ -60,8 +119,38 @@ def main():
 
     csvfile = os.path.join(args.save_path, f"indices_{args.name}.csv")
     audio_savepath = os.path.join(args.save_path, f"audio_{args.name}")
+
+    # Create directories
     if not os.path.exists(audio_savepath):
         os.makedirs(audio_savepath)
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
+
+    # Load checkpoint if exists
+    checkpoint_data = load_checkpoint(args.save_path)
+    processed_files = get_processed_files_from_checkpoint(checkpoint_data)
+    current_batch_idx = checkpoint_data.get("current_batch_idx", 0)
+
+    if processed_files:
+        print(
+            f"Resuming from checkpoint: {len(processed_files)} files already processed"
+        )
+
+    # Set up signal handler for graceful interruption
+    processed_files = set()  # Initialize here for signal handler
+    current_batch_idx = 0
+    total_batches = 0
+
+    def signal_handler(signum, frame):
+        print("\n⚠️  Received interrupt signal. Saving checkpoint...")
+        save_checkpoint(
+            args.save_path, processed_files, current_batch_idx, total_batches
+        )
+        print("Checkpoint saved. Exiting...")
+        sys.exit(1)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     # get meta data file
     df_files = metadata.metadata_generator(args.data_path, AUDIO_FORMAT)
@@ -78,23 +167,73 @@ def main():
         batch_size=args.batch_size,
         num_workers=args.multiprocessing,
     )
+
+    # Calculate total batches for progress tracking
+    total_batches = len(dl)
+
+    # Initialize data structures
     df_site = {"datetime": [], "name": [], "flacfile": [], "start": []}
     df_site["clipwise_output"] = []
     df_site["embedding"] = []
     df_site["sorted_indexes"] = []
     df_site["dB"] = []
 
-    ## Initialize audio tagging model
+    # Store ecoac keys for later use
+    ecoac_keys = None
+
+    ## Initialize audio tagging model
     model = PANNS_Model.from_pretrained(f"nicofarr/panns_{args.model_type}")
     model.eval()
 
-    for batch_idx, (inputs, info) in enumerate(tqdm(dl)):
+    # Resume from checkpoint if available
+    if processed_files:
+        print(f"Skipping {len(processed_files)} already processed files")
 
+    # Process batches with enhanced progress tracking
+    processed_count = 0
+    batch_count = 0
+
+    print(
+        f"Starting batch processing with {args.multiprocessing} workers for {total_batches} total batches to process"
+    )
+
+    for batch_idx, (inputs, info) in enumerate(
+        tqdm(dl, desc="Processing batches", unit="batch")
+    ):
+        batch_count = batch_idx + 1
+        current_batch_idx = batch_count
+
+        # Check if this batch contains already processed files
+        batch_files = []
+        for idx, date_ in enumerate(info["date"]):
+            file_key = f"{info['name'][idx]}_{date_}_{info['start'][idx]}"
+            batch_files.append(file_key)
+
+        # Skip batch if all files are already processed
+        if all(file_key in processed_files for file_key in batch_files):
+            continue
+
+        # Show batch processing details
+        batch_size = len(info["date"])
+        # tqdm.write(f"📦 Processing batch {batch_count}/{total_batches} ({batch_size} segments)")
+
+        # Process the batch
         clipwise_output, labels, sorted_indexes, embedding = inference(
             model, inputs, usecuda=False
         )
 
+        # Store ecoac keys from first batch
+        if ecoac_keys is None:
+            ecoac_keys = list(info["ecoac"].keys())
+
+        # Process each file in the batch
         for idx, date_ in enumerate(info["date"]):
+            file_key = f"{info['name'][idx]}_{date_}_{info['start'][idx]}"
+
+            # Skip if already processed
+            if file_key in processed_files:
+                continue
+
             df_site["datetime"].append(str(date_))
             df_site["name"].append(str(info["name"][idx]))
             df_site["flacfile"].append(str(date_) + ".flac")
@@ -104,8 +243,34 @@ def main():
             df_site["sorted_indexes"].append(sorted_indexes[idx])
             df_site["embedding"].append(embedding[idx])
 
-            for key in info["ecoac"].keys():
+            for key in ecoac_keys:
                 df_site[key].append(float(info["ecoac"][key].numpy()[idx]))
+
+            # Mark file as processed
+            processed_files.add(file_key)
+            processed_count += 1
+
+        # Save checkpoint every 10 batches or at the end
+        if batch_count % 10 == 0 or batch_count == total_batches:
+            save_checkpoint(args.save_path, processed_files, batch_count, total_batches)
+
+        # Update progress
+        print_progress_bar(
+            batch_count,
+            total_batches,
+            prefix="Batch Progress",
+            suffix=f"({processed_count} files processed)",
+        )
+
+    print(
+        f"\n✅ Processing complete! Processed {processed_count} files in {batch_count} batches"
+    )
+
+    # Clean up checkpoint file on successful completion
+    checkpoint_path = os.path.join(args.save_path, "processing_checkpoint.json")
+    if os.path.exists(checkpoint_path):
+        os.remove(checkpoint_path)
+        print("Checkpoint file cleaned up")
 
     Df_tagging = tagging_validate(df_site)
 
@@ -115,8 +280,9 @@ def main():
     Df_eco["name"] = df_site["name"]
     Df_eco["start"] = df_site["start"]
     Df_eco["datetime"] = df_site["datetime"]
-    for key in info["ecoac"].keys():
-        Df_eco[key] = df_site[key]
+    if ecoac_keys:
+        for key in ecoac_keys:
+            Df_eco[key] = df_site[key]
 
     ## Fusing with the dataframe containing only the ecoacoustic indices
     Df_final = pd.merge(Df_tagging, Df_eco, on=["name", "start", "datetime"])
