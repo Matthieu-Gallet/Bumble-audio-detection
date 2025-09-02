@@ -159,6 +159,30 @@ Parameter `evaluation_scope` dans simple_config.yaml :
 - **"global"** : Analyse globale uniquement  
 - **"both"** : Analyses locale et globale
 
+## Nettoyage automatique des fichiers
+
+### Suppression progressive
+
+Le système peut supprimer automatiquement les fichiers audio découpés après traitement de chaque site pour économiser l'espace disque :
+
+```yaml
+processing:
+  cleanup_audio_files: true     # Active la suppression automatique
+```
+
+### Fonctionnement
+
+1. **Timing** : Suppression après traitement complet d'un site (détection + évaluation)
+2. **Sécurité** : Suppression uniquement si le fichier de résultats (.csv) existe
+3. **Logs** : Affichage du nombre de fichiers et de l'espace libéré
+4. **Progressif** : Site par site pour éviter les pics d'utilisation disque
+
+### Avantages
+
+- **Espace disque** : Libération progressive de l'espace
+- **Performance** : Pas d'accumulation de fichiers temporaires
+- **Sécurité** : Préservation des résultats de détection
+
 ## Configuration avancée
 
 ### Exclusion de classes
@@ -192,6 +216,9 @@ processing:
   segment_length: 10             # Durée des segments audio (secondes)
   audio_format: "wav"            # Format audio traité
   timeout: 1800                  # Timeout de traitement (secondes)
+  multiprocessing: 8             # Nombre de processus parallèles
+  batch_size: 128                # Taille des lots pour le traitement
+  cleanup_audio_files: true      # Suppression automatique des fichiers audio après traitement
 ```
 
 ### Modèle

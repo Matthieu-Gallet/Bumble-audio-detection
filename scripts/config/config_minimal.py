@@ -46,6 +46,11 @@ class WorkflowConfig:
         self._evaluation_output_dir = "evaluation_advanced"
         self._excluded_classes = {}  # Classes to exclude from error analysis
 
+        # Cleanup settings
+        self._cleanup_audio_files = (
+            False  # Clean up intermediate audio files after processing
+        )
+
         # Load YAML config if provided and exists
         self._load_yaml_config()
 
@@ -98,6 +103,9 @@ class WorkflowConfig:
                         )
                         self._batch_size = processing.get(
                             "batch_size", self._batch_size
+                        )
+                        self._cleanup_audio_files = processing.get(
+                            "cleanup_audio_files", self._cleanup_audio_files
                         )
 
                     # Model configuration
@@ -311,6 +319,11 @@ class WorkflowConfig:
     @property
     def evaluation_output_dir(self) -> str:
         return self._evaluation_output_dir
+
+    @property
+    def cleanup_audio_files(self) -> bool:
+        """Return whether to clean up intermediate audio files after processing."""
+        return self._cleanup_audio_files
 
     @property
     def annotations_dir(self) -> str:

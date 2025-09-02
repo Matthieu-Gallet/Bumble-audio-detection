@@ -374,6 +374,54 @@ def run_global_advanced_evaluation(merged_csv, annotation_dirs, config):
         print(f"Error during global advanced evaluation: {e}")
 
 
+def cleanup_audio_files(data_path, session_name):
+    """
+    Supprime les fichiers audio découpés d'un site après traitement.
+
+    Args:
+        data_path: Chemin vers le répertoire des données audio
+        session_name: Nom de la session pour les logs
+    """
+    try:
+        audio_files = []
+        # Trouver tous les fichiers audio dans le répertoire
+        for ext in ["*.wav", "*.flac"]:
+            audio_files.extend(glob.glob(os.path.join(data_path, ext)))
+
+        if audio_files:
+            print(
+                f"  Suppression de {len(audio_files)} fichiers audio pour {session_name}"
+            )
+
+            # Supprimer les fichiers
+            deleted_count = 0
+            total_size = 0
+
+            for audio_file in audio_files:
+                try:
+                    file_size = os.path.getsize(audio_file)
+                    os.remove(audio_file)
+                    deleted_count += 1
+                    total_size += file_size
+                except Exception as e:
+                    print(f"    Erreur suppression {audio_file}: {e}")
+
+            # Convertir la taille en unité lisible
+            if total_size > 1024**3:
+                size_str = f"{total_size / (1024**3):.2f} GB"
+            elif total_size > 1024**2:
+                size_str = f"{total_size / (1024**2):.2f} MB"
+            else:
+                size_str = f"{total_size / 1024:.2f} KB"
+
+            print(f"    ✓ {deleted_count} fichiers supprimés ({size_str} libérés)")
+        else:
+            print(f"  Aucun fichier audio à supprimer pour {session_name}")
+
+    except Exception as e:
+        print(f"  Erreur lors du nettoyage pour {session_name}: {e}")
+
+
 def run_detection_for_directory(data_dir, config, annotation_dirs=None):
     """Run detection processing for a single directory and site-level evaluation."""
     session_name = data_dir["name"]
@@ -437,6 +485,10 @@ def run_detection_for_directory(data_dir, config, annotation_dirs=None):
     # Run site-level evaluation if we have the result file and annotations
     if os.path.exists(result_file) and annotation_dirs and config.is_evaluation_mode:
         run_site_level_evaluation(result_file, session_name, annotation_dirs, config)
+
+    # Clean up audio files if enabled in config and processing was successful
+    if os.path.exists(result_file) and getattr(config, "cleanup_audio_files", False):
+        cleanup_audio_files(data_path, session_name)
 
     return result_file if os.path.exists(result_file) else None
 
@@ -623,6 +675,7 @@ def main():
             result_file = run_detection_for_directory(data_dir, config, annotation_dirs)
             if result_file:
                 result_files.append(result_file)
+                print(f"✓ Site processing completed: {data_dir['name']}")
 
         # Merge results
         if result_files:
