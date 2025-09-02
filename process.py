@@ -136,19 +136,30 @@ def main():
             f"Resuming from checkpoint: {len(processed_files)} files already processed"
         )
 
-    # Set up signal handler for graceful interruption
-    processed_files = set()  # Initialize here for signal handler
-    current_batch_idx = 0
+    # Initialize total_batches (will be set properly after dataloader creation)
     total_batches = 0
+    signal_handler_called = False
 
     def signal_handler(signum, frame):
-        print("\n⚠️  Received interrupt signal. Saving checkpoint...")
+        nonlocal signal_handler_called
+        if signal_handler_called:
+            return  # Prevent multiple calls
+        signal_handler_called = True
+
+        # Ignore further signals immediately
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
+        # print(f"\n⚠️  Received interrupt signal {signum}. Saving checkpoint...")
         save_checkpoint(
             args.save_path, processed_files, current_batch_idx, total_batches
         )
-        print("Checkpoint saved. Exiting...")
-        sys.exit(1)
+        # print("Checkpoint saved. Exiting...")
 
+        # Force immediate exit without cleanup
+        os._exit(1)
+
+    # Set up signal handler for graceful interruption
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
@@ -203,6 +214,10 @@ def main():
         batch_count = batch_idx + 1
         current_batch_idx = batch_count
 
+        # Save checkpoint at the beginning of each batch (in case of interruption)
+        if batch_count == 1 or batch_count % 10 == 0:
+            save_checkpoint(args.save_path, processed_files, batch_count, total_batches)
+
         # Check if this batch contains already processed files
         batch_files = []
         for idx, date_ in enumerate(info["date"]):
@@ -250,9 +265,8 @@ def main():
             processed_files.add(file_key)
             processed_count += 1
 
-        # Save checkpoint every 10 batches or at the end
-        if batch_count % 10 == 0 or batch_count == total_batches:
-            save_checkpoint(args.save_path, processed_files, batch_count, total_batches)
+        # Save checkpoint more frequently (after each batch to avoid data loss)
+        save_checkpoint(args.save_path, processed_files, batch_count, total_batches)
 
         # Update progress
         print_progress_bar(

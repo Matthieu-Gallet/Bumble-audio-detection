@@ -25,7 +25,6 @@ def metadata_generator(folder, file_format):
     """Generate meta data for one folder (one site) and save in csv and pkl"""
 
     filelist = []
-    Df = pd.DataFrame(columns=["filename", "datetime", "length", "sr"])
     Df_error = pd.DataFrame(columns=["filename"])
     if file_format == "wav":
         n = 3
@@ -39,6 +38,9 @@ def metadata_generator(folder, file_format):
             if name[-n:].casefold() == file_format and name[:2] != "._":
                 filelist.append(os.path.join(root, name))
 
+    # Collect all dataframes in a list instead of concatenating in loop
+    dataframes_list = []
+
     for idx, wavfile in enumerate(tqdm(filelist)):
         _, meta = utils.read_audio_hdr(
             wavfile, False, file_format=file_format
@@ -50,20 +52,23 @@ def metadata_generator(folder, file_format):
             print("skipping short file")
             continue
 
-        Df = pd.concat(
-            [
-                Df,
-                pd.DataFrame(
-                    {
-                        "datetime": [meta["datetime"]],
-                        "filename": [wavfile],
-                        "length": [len(x)],
-                        "sr": [sr],
-                        "dB": 10 * np.log10(np.std(x) ** 2),
-                    }
-                ),
-            ],
-            ignore_index=True,
+        # Create individual dataframe and add to list
+        df_row = pd.DataFrame(
+            {
+                "datetime": [meta["datetime"]],
+                "filename": [wavfile],
+                "length": [len(x)],
+                "sr": [sr],
+                "dB": 10 * np.log10(np.std(x) ** 2),
+            }
         )
+        dataframes_list.append(df_row)
+
+    # Concatenate all dataframes at once (more efficient and no warning)
+    if dataframes_list:
+        Df = pd.concat(dataframes_list, ignore_index=True)
+    else:
+        Df = pd.DataFrame(columns=["filename", "datetime", "length", "sr", "dB"])
+
     Df = Df.sort_values("datetime").reset_index()
     return Df

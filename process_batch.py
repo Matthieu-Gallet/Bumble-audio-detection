@@ -126,17 +126,6 @@ def load_checkpoint(output_base):
         }
 
 
-def signal_handler(signum, frame):
-    """Handle interruption signals to save checkpoint before exit."""
-    print(f"\n⚠️ Interruption received (signal {signum})")
-    if checkpoint_file and processed_sessions:
-        save_checkpoint(
-            checkpoint_file, processed_sessions, current_session_idx, total_sessions
-        )
-    print("Exiting...")
-    sys.exit(1)
-
-
 def print_progress_bar(current, total, prefix="Progress", suffix="", length=50):
     """Print a progress bar to the console."""
     if total == 0:
@@ -796,24 +785,41 @@ def main():
         config.set_mode(args.mode)
         print(f"Mode overridden to: {args.mode}")
 
+    # Create output directory
+    os.makedirs(config.output_base, exist_ok=True)
+
+    # Initialize variables that will be used by signal handler
+    processed_sessions = set()
+    current_session_idx = 0
+    total_sessions = 0
+    signal_handler_called = False
+
     # Set up signal handler for graceful interruption
     def signal_handler(signum, frame):
-        print("\n⚠️  Received interrupt signal. Saving checkpoint...")
-        if "processed_sessions" in locals() and "config" in locals():
+        nonlocal signal_handler_called
+        if signal_handler_called:
+            return  # Prevent multiple calls
+        signal_handler_called = True
+
+        # Ignore further signals immediately
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
+        # print(f"\n⚠️  Received interrupt signal {signum}. Saving checkpoint...")
+        if processed_sessions:  # Only save if we have something to save
             save_checkpoint(
                 config.output_base,
                 processed_sessions,
                 current_session_idx,
                 total_sessions,
             )
-        print("Checkpoint saved. Exiting...")
-        sys.exit(1)
+        # print("Checkpoint saved. Exiting...")
+
+        # Force immediate exit without cleanup
+        os._exit(1)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-
-    # Create output directory
-    os.makedirs(config.output_base, exist_ok=True)
 
     # Find annotation directories (needed for both site-level and global evaluation)
     annotation_dirs = []
@@ -840,18 +846,12 @@ def main():
         checkpoint_path = os.path.join(config.output_base, "processing_checkpoint.json")
         if os.path.exists(checkpoint_path):
             checkpoint_data = load_checkpoint(config.output_base)
-            processed_sessions = set(checkpoint_data.get("processed_sessions", []))
+            processed_sessions.update(checkpoint_data.get("processed_sessions", []))
             current_session_idx = checkpoint_data.get("current_session_idx", 0)
             total_sessions_from_checkpoint = checkpoint_data.get("total_sessions", 0)
             print(
                 f"Resuming from checkpoint: {len(processed_sessions)}/{total_sessions_from_checkpoint} sessions processed"
             )
-        else:
-            processed_sessions = set()
-            current_session_idx = 0
-
-        # Set global checkpoint path for signal handler
-        checkpoint_file = config.output_base
 
         # Process each directory with site-level evaluation
         result_files = []
