@@ -1,0 +1,12 @@
+MÉTRIQUES DE PERFORMANCE
+==================================================
+precision: 0.34696806602081093
+recall: 0.7836304700162074
+f1_score: 0.48097488187018156
+accuracy: 0.877141343380232
+specificity: 0.8844664508347616
+true_positives: 967
+false_positives: 1820
+true_negatives: 13933
+false_negatives: 267
+support: None

@@ -260,7 +260,13 @@ output_batch/
 ```
 
 ## Analyses
-Le script
+Le dossier analysis regroupe deux types d'analyses : les analyses spatiales qui visent à étudier les performances de détection à la fois localement sur chaque site et sur type (tente vs air libre) et globalement (prendre l'ensemble des sites et des types) et les analyses temporelles qui se concentrent sur une simple évaluation des performances sur la taille de fenêtre optimale. On trouvera dans le fichier merged_results.csv une agrégation des résultats de détection.
+
+### Analyse spatiale
+Le script analyze_output_final.py permet d'évaluer la variation du F1-score et du seuil optimal entre les différentes campagnes et entre les différents types de données (pollisophenotent vs pollisophenocatch).
+
+### Analyse temporelle
+Le script test_duration.sh permet d'évaluer la performance sur un jeu de données en fonction de la taille de la fenêtre d'analyse. Il génère des rapports sur les temps de traitement et la précision des résultats.
 
 ## TODO
 
