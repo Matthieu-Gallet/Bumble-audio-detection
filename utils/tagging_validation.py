@@ -130,11 +130,11 @@ def tagging_validate(Df, fewlabels=fewlabels, dict_allcats=dict_allcats):
 
     for cursubcat in macro_cat.keys():
         curlabels = ["tag_" + i for i in macro_cat[cursubcat]]
-        print(f"Processing category: {cursubcat} with labels: {curlabels}")
+        # print(f"Processing category: {cursubcat} with labels: {curlabels}")
 
         # Debug: check which columns are actually available
         available_columns = list(Df_new.columns)
-        print(f"Available columns: {available_columns}")
+        # print(f"Available columns: {available_columns}")
 
         # Check which labels are missing and filter to only available ones
         missing_labels = [

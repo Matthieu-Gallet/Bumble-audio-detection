@@ -84,7 +84,7 @@ def get_dataloader_site(
     # Progress bar for file processing
     with tqdm(
         total=total_files,
-        desc="📁 Processing files",
+        desc="Processing files",
         unit="file",
         bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]",
     ) as file_pbar:
@@ -98,17 +98,17 @@ def get_dataloader_site(
             # Update file progress bar with current file info
             file_pbar.set_postfix(
                 {
-                    "🎵 file": os.path.basename(wavfile)[:30]
+                    "file": os.path.basename(wavfile)[:30]
                     + ("..." if len(os.path.basename(wavfile)) > 30 else ""),
-                    "🔢 segments": nb_win,
-                    "⏱️ duration": f"{duration:.1f}s",
+                    "segments": nb_win,
+                    "duration": f"{duration:.1f}s",
                 }
             )
 
             # Progress bar for segment creation within this file
             with tqdm(
                 total=nb_win,
-                desc=f"  ✂️ Segments for {os.path.basename(wavfile)[:20]}...",
+                desc=f"Segments for {os.path.basename(wavfile)[:20]}...",
                 unit="segment",
                 leave=False,
                 bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}, {rate_fmt}]",
@@ -135,7 +135,7 @@ def get_dataloader_site(
 
     total_segments = len(meta_dataloader)
     print(
-        f"✅ Segmentation complete: {total_segments} segments created from {total_files} files"
+        f"Segmentation complete: {total_segments} segments created from {total_files} files"
     )
     print(
         f"Total audio data: ~{total_segments * len_audio_s / 3600:.1f} hours of audio and Average segments per file: {total_segments/total_files:.1f}"

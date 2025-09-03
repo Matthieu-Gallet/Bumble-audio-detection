@@ -40,35 +40,54 @@ def metadata_generator(folder, file_format):
 
     # Collect all dataframes in a list instead of concatenating in loop
     dataframes_list = []
+    corrupted_files = []
 
     for idx, wavfile in enumerate(tqdm(filelist)):
-        _, meta = utils.read_audio_hdr(
-            wavfile, False, file_format=file_format
-        )  # meta data
-        x, sr = librosa.load(wavfile, sr=None, mono=True)
         try:
-            x, sr = librosa.load(wavfile, sr=None, mono=True)
-        except:
-            print("skipping short file")
-            continue
+            _, meta = utils.read_audio_hdr(
+                wavfile, False, file_format=file_format
+            )  # meta data
 
-        # Create individual dataframe and add to list
-        df_row = pd.DataFrame(
-            {
-                "datetime": [meta["datetime"]],
-                "filename": [wavfile],
-                "length": [len(x)],
-                "sr": [sr],
-                "dB": 10 * np.log10(np.std(x) ** 2),
-            }
-        )
-        dataframes_list.append(df_row)
+            # Try to load the audio file
+            x, sr = librosa.load(wavfile, sr=None, mono=True)
+
+            # Create individual dataframe and add to list
+            df_row = pd.DataFrame(
+                {
+                    "datetime": [meta["datetime"]],
+                    "filename": [wavfile],
+                    "length": [len(x)],
+                    "sr": [sr],
+                    "dB": 10 * np.log10(np.std(x) ** 2),
+                }
+            )
+            dataframes_list.append(df_row)
+
+        except Exception as e:
+            print(f"Skipping corrupted file: {wavfile} - Error: {str(e)}")
+            corrupted_files.append(wavfile)
+            continue
 
     # Concatenate all dataframes at once (more efficient and no warning)
     if dataframes_list:
         Df = pd.concat(dataframes_list, ignore_index=True)
     else:
         Df = pd.DataFrame(columns=["filename", "datetime", "length", "sr", "dB"])
+
+    # Save corrupted files list if any
+    if corrupted_files:
+        corrupted_file_path = os.path.join(folder, "corrupted_files.txt")
+        with open(corrupted_file_path, "w") as f:
+            f.write("# Liste des fichiers corrompus ou illisibles\n")
+            f.write(f"# Générée le: {pd.Timestamp.now()}\n")
+            f.write(f"# Nombre de fichiers corrompus: {len(corrupted_files)}\n\n")
+            for corrupt_file in corrupted_files:
+                f.write(f"{corrupt_file}\n")
+        print(
+            f"⚠️  {len(corrupted_files)} fichiers corrompus trouvés et listés dans: {corrupted_file_path}"
+        )
+    else:
+        print("✅ Aucun fichier corrompu détecté")
 
     Df = Df.sort_values("datetime").reset_index()
     return Df

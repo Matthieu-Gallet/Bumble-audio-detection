@@ -25,8 +25,8 @@ processing:
   # Audio format to process
   audio_format: "wav"
   # Timeout for processing in seconds
-  timeout: 1800
-  multiprocessing: 8
+  timeout: 7200
+  multiprocessing: 10
   batch_size: 32
   # Clean up intermediate audio files after processing each site
   cleanup_audio_files: true
