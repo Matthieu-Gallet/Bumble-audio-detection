@@ -7,9 +7,9 @@
 
 paths:
   # Data directory containing all session folders
-  data_dir: "/media/mgallet/BACK UP/select_data"
+  data_dir: "/mnt/BACK UP/select_data"
   # Output directory for results
-  output_dir: "/media/mgallet/BACK UP/inference"
+  output_dir: "/mnt/BACK UP/inference"
   # Python executable path
   python_path: ".venv/bin/python"
   # Process script path

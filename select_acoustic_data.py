@@ -379,7 +379,7 @@ def copy_selected_files(source_dir, selected_files, target_dir):
 
 def main():
     """Fonction principale"""
-    source_dir = "/media/mgallet/BACK UP/ACOUSTIQUE"
+    source_dir = "/mnt/BACK UP/ACOUSTIQUE"
 
     # Proposer un répertoire de destination par défaut dans le dossier parent
     source_parent = os.path.dirname(source_dir)

@@ -412,7 +412,7 @@ def main():
     Fonction principale d'analyse
     """
     # Chemins
-    csv_path = "/media/mgallet/BACK UP/inference/merged_results.csv"
+    csv_path = "/mnt/BACK UP/inference/merged_results.csv"
     output_dir = "acoustic_analysis_results"
 
     print("ANALYSE COMPLETE DES RESULTATS ACOUSTIQUES")
